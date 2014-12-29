@@ -3,6 +3,9 @@ node-readlines
 
 Read files line by line using node
 
+Install with
+`npm install n-readlines`
+
 Usage
 ==
 ```javascript

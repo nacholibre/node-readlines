@@ -1,5 +1,5 @@
 {
-  "name": "readlines",
+  "name": "n-readlines",
   "version": "0.1.0",
   "description": "Read file line by line without buffering the whole file in memory.",
   "main": "./readlines.js",
