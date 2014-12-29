@@ -1,0 +1,12 @@
+{
+  "name": "readlines",
+  "version": "0.1.0",
+  "description": "Read file line by line without buffering the whole file in memory.",
+  "dependencies": {},
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.0.1"
+  }
+}
