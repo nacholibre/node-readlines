@@ -9,7 +9,7 @@ Install with
 Usage
 ==
 ```javascript
-var readLines = require('./readlines.js');
+var readLines = require('n-readlines');
 var liner = new readLines('filename.txt');
 console.log(liner.next());
 ```
