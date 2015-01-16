@@ -16,6 +16,8 @@ Install with
   * `readChunk` - Integer number of bytes to read at once. Default: 1024
   * `newLineCharacter` - String new line character, only works with one byte characters for now. Default: `\n` which is `0x0a` hex encoded
 
+`node-readlines` can handle files without newLineCharacter after the last line
+
 ---------------------------------------
 
 ###readlines.read()
