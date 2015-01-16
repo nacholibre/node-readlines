@@ -1,11 +1,9 @@
 {
   "name": "n-readlines",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Read file line by line without buffering the whole file in memory.",
   "main": "./readlines.js",
-  "dependencies": {
-    "hexdump": "^0.1.0"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "http://github.com/nacholibre/node-readlines.git"
@@ -26,7 +24,6 @@
     "node": ">=0.10.0"
   },
   "devDependencies": {
-    "hexdump": "^0.1.0",
     "mocha": "^2.0.1"
   },
   "scripts": {
