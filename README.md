@@ -1,14 +1,31 @@
-node-readlines
+##node-readlines
 ==============
 Reading file line by line may seem like a trivial problem, but in node, there is no straightforward way to do it. There are a lot of libraries using Transform Streams to achieve it, but it seems like a overkill, so I've wrote simple version using only the `filesystem` module of node.
 
 Install with
 `npm install n-readlines`
 
-Usage
-==
+##Documentation
+###new readlines(filename, [options]);
+
+**Arguments**
+
+* `filename` - String path to the file you want to read from
+* `options` - Object 
+  * `readChunk` - Integer number of bytes to read at once. Default: 1024
+  * `newLineCharacter` - String new line character, only works with one byte characters for now. Default: `\n` which is `0x0a` hex encoded
+
+###readlines.read()
+Returns `buffer` with the line data without the `newLineCharacter` or `false` if end of file is reached.
+
+##Example:
 ```javascript
 var readLines = require('n-readlines');
-var liner = new readLines('filename.txt');
-console.log(liner.next());
+var liner = new readLines('filename.txt', {'readChunk': 2048, 'newLineCharacter': '\n'});
+
+while (line = liner.next()) {
+  console.log(line.toString('ascii'));
+}
+
+console.log('end of line is reached');
 ```
