@@ -30,7 +30,7 @@ describe('Line by line', function() {
 
     it('should read right between two chunks', function () {
         var filename = __dirname + '/dummy_files/normalFile.txt';
-        var liner = new lineByLine(filename, 16);
+        var liner = new lineByLine(filename, {'readChunk': 16});
 
         assert(liner.next().toString('ascii') === 'google.com');
         assert(liner.next().toString('ascii') === 'yahoo.com');

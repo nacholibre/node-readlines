@@ -2,8 +2,20 @@
 
 var fs = require('fs');
 
-function LineByLine(file, chunk) {
-    this.readChunk = chunk || 1024;
+function LineByLine(file, options) {
+    options = options || {};
+
+    if (!options.readChunk) {
+        options.readChunk = 1024;
+    }
+
+    if (!options.newLineCharacter) {
+        options.newLineCharacter = 0x0a; //linux line ending
+    } else {
+        options.newLineCharacter = options.newLineCharacter.charCodeAt(0);
+    }
+
+    this.options = options;
 
     this.bufferData = null;
     this.bytesRead = 0;
@@ -17,8 +29,7 @@ function LineByLine(file, chunk) {
 
     this.linesCache = [];
 
-    this.emptyBufferIndexValue = 0x00;
-    this.newLineCharacter = 0x0a;
+    this.newLineCharacter = options.newLineCharacter;
 
     this.lastBytePosition = null;
 
@@ -29,7 +40,6 @@ LineByLine.prototype._extractLines = function(buffer) {
     var line;
     var lines = [];
     var bufferPosition = 0;
-
 
     var lastNewLineBufferPosition = 0;
     while (true) {
@@ -53,12 +63,12 @@ LineByLine.prototype._extractLines = function(buffer) {
 };
 
 LineByLine.prototype._readChunk = function(lineLeftovers) {
-    var bufferData = new Buffer(this.readChunk);
+    var bufferData = new Buffer(this.options.readChunk);
 
-    var bytesRead = fs.readSync(this.fd, bufferData, 0, this.readChunk, this.fdPosition);
+    var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
     this.fdPosition = this.fdPosition + bytesRead;
 
-    if (bytesRead < this.readChunk) {
+    if (bytesRead < this.options.readChunk) {
         this.eofReached = true;
         bufferData = bufferData.slice(0, bytesRead);
     }
