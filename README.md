@@ -4,6 +4,8 @@ Reading file line by line may seem like a trivial problem, but in node, there is
 Install with
 `npm install n-readlines`
 
+---------------------------------------
+
 ##Documentation
 ###new readlines(filename, [options]);
 
@@ -14,10 +16,14 @@ Install with
   * `readChunk` - Integer number of bytes to read at once. Default: 1024
   * `newLineCharacter` - String new line character, only works with one byte characters for now. Default: `\n` which is `0x0a` hex encoded
 
+---------------------------------------
+
 ###readlines.read()
 Returns `buffer` with the line data without the `newLineCharacter` or `false` if end of file is reached.
 
-##Example:
+---------------------------------------
+
+##Example
 ```javascript
 var readLines = require('n-readlines');
 var liner = new readLines('filename.txt', {'readChunk': 2048, 'newLineCharacter': '\n'});
