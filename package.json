@@ -3,27 +3,30 @@
   "version": "0.1.0",
   "description": "Read file line by line without buffering the whole file in memory.",
   "main": "./readlines.js",
-  "dependencies": {},
+  "dependencies": {
+    "hexdump": "^0.1.0"
+  },
   "repository": {
     "type": "git",
     "url": "http://github.com/nacholibre/node-readlines.git"
   },
   "keywords": [
-      "read",
-      "line",
-      "reader",
-      "linereader",
-      "readfile",
-      "linebyline",
-      "synchronous",
-      "sync",
-      "readline",
-      "readlines"
+    "read",
+    "line",
+    "reader",
+    "linereader",
+    "readfile",
+    "linebyline",
+    "synchronous",
+    "sync",
+    "readline",
+    "readlines"
   ],
   "engines": {
     "node": ">=0.10.0"
   },
   "devDependencies": {
+    "hexdump": "^0.1.0",
     "mocha": "^2.0.1"
   },
   "scripts": {

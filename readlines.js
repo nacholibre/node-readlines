@@ -15,105 +15,99 @@ function LineByLine(file, chunk) {
 
     this.line = '';
 
-    this.lines = null;
+    this.linesCache = [];
 
     this.emptyBufferIndexValue = 0x00;
     this.newLineCharacter = 0x0a;
+
+    this.lastBytePosition = null;
 
     this.fdPosition = 0;
 }
 
 LineByLine.prototype._extractLines = function(buffer) {
+    var line;
     var lines = [];
-
     var bufferPosition = 0;
 
-    var line = '';
 
+    var lastNewLineBufferPosition = 0;
     while (true) {
         var bufferPositionValue = buffer[bufferPosition++];
 
         if (bufferPositionValue === this.newLineCharacter) {
-            lines.push(line + '\n');
-            line = '';
-
-            //skip next byte bacause it's \n
-            continue;
+            line = buffer.slice(lastNewLineBufferPosition, bufferPosition);
+            lines.push(line);
+            lastNewLineBufferPosition = bufferPosition;
         } else if (!bufferPositionValue) {
-            // end of buffer reached
-
-            if (line !== '') {
-                //push if any unfull line is left in the buffer
-                lines.push(line);
-            }
-
             break;
         }
+    }
 
-        //skip utf stuff
-        //http://codepoints.net/U+0002
-        //http://codepoints.net/U+0001
-        if (bufferPositionValue === 0x02 || bufferPositionValue === 0x01) {
-            continue;
-        }
-
-        line += String.fromCharCode(bufferPositionValue);
+    var leftovers = buffer.slice(lastNewLineBufferPosition, bufferPosition);
+    if (leftovers.length) {
+        lines.push(leftovers);
     }
 
     return lines;
 };
 
+LineByLine.prototype._readChunk = function(lineLeftovers) {
+    var bufferData = new Buffer(this.readChunk);
+
+    var bytesRead = fs.readSync(this.fd, bufferData, 0, this.readChunk, this.fdPosition);
+    this.fdPosition = this.fdPosition + bytesRead;
+
+    if (bytesRead < this.readChunk) {
+        this.eofReached = true;
+        bufferData = bufferData.slice(0, bytesRead);
+    }
+
+    if (bytesRead) {
+        this.linesCache = this._extractLines(bufferData);
+
+        if (lineLeftovers) {
+            this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
+        }
+    }
+
+    return bytesRead;
+};
+
 LineByLine.prototype.next = function() {
     var line = false;
 
-    if (this.eofReached && this.lines.length === 0) {
-        return false;
+    if (this.eofReached && this.linesCache.length === 0) {
+        return line;
     }
 
     var bytesRead;
 
-    if (!this.lines) {
-        var bufferData = new Buffer(this.readChunk);
-
-        bytesRead = fs.readSync(this.fd, bufferData, 0, this.readChunk, this.fdPosition);
-        this.fdPosition = this.fdPosition + bytesRead;
-
-        if (bytesRead) {
-            this.lines = this._extractLines(bufferData);
-        }
+    if (!this.linesCache.length) {
+        bytesRead = this._readChunk();
     }
 
-    if (this.lines.length) {
-        line = this.lines.shift();
+    if (this.linesCache.length) {
+        line = this.linesCache.shift();
 
         var lastLineCharacter = line[line.length-1];
 
-        if (lastLineCharacter !== '\n') {
-            var bufferData = new Buffer(this.readChunk);
-
-            bytesRead = fs.readSync(this.fd, bufferData, 0, this.readChunk, this.fdPosition);
-            this.fdPosition = this.fdPosition + bytesRead;
+        if (lastLineCharacter !== 0x0a) {
+            bytesRead = this._readChunk(line);
 
             if (bytesRead) {
-                var lines = this._extractLines(bufferData);
-                line = line + lines.shift();
-                this.lines = lines;
+                line = this.linesCache.shift();
             }
-
         }
     }
 
-    if (bytesRead < this.readChunk) {
-        this.eofReached = true;
-    }
-
-    if (this.eofReached && this.lines.length === 0) {
+    if (this.eofReached && this.linesCache.length === 0) {
         fs.closeSync(this.fd);
         this.fd = null;
     }
 
-    if (line) {
-        line = line.replace('\n', '');
+    if (line && line[line.length-1] === this.newLineCharacter) {
+        line = line.slice(0, line.length-1);
     }
 
     return line;
