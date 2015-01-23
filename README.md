@@ -28,8 +28,8 @@ Returns `buffer` with the line data without the `newLineCharacter` or `false` if
 
 ##Example
 ```javascript
-var lineByLine = require('./readlines.js');
-var liner = new lineByLine('./dummy_files/twoLineFile.txt');
+var lineByLine = require('readlines');
+var liner = new lineByLine('./textFile.txt');
 
 var line;
 var lineNumber = 0;
