@@ -28,7 +28,7 @@ Returns `buffer` with the line data without the `newLineCharacter` or `false` if
 
 ##Example
 ```javascript
-var lineByLine = require('readlines');
+var lineByLine = require('n-readlines');
 var liner = new lineByLine('./textFile.txt');
 
 var line;
