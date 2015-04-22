@@ -8,11 +8,13 @@ Install with
 
 ##Documentation
 ###new readlines(filename, [options]);
+###new readlines(fd, [options]);
 
 **Arguments**
 
 * `filename` - String path to the file you want to read from
-* `options` - Object 
+* `fd` - File descriptor
+* `options` - Object
   * `readChunk` - Integer number of bytes to read at once. Default: 1024
   * `newLineCharacter` - String new line character, only works with one byte characters for now. Default: `\n` which is `0x0a` hex encoded
 

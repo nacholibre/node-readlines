@@ -23,7 +23,11 @@ function LineByLine(file, options) {
     this.bufferPosition = 0;
     this.eofReached = false;
 
-    this.fd = fs.openSync(file, 'r');
+    if (typeof file === 'number') {
+        this.fd = file;
+    } else {
+        this.fd = fs.openSync(file, 'r');
+    }
 
     this.line = '';
 
