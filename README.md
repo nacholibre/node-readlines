@@ -23,7 +23,7 @@ Install with
 
 ---------------------------------------
 
-###readlines.read()
+###readlines.next()
 Returns `buffer` with the line data without the `newLineCharacter` or `false` if end of file is reached.
 
 ---------------------------------------
