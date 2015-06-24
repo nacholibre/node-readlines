@@ -17,114 +17,120 @@ function LineByLine(file, options) {
 
     this.options = options;
 
-    this.bufferData = null;
-    this.bytesRead = 0;
-
-    this.bufferPosition = 0;
     this.eofReached = false;
+    this.newLineCharacter = options.newLineCharacter;
+    this.leftovers = null;
 
     if (typeof file === 'number') {
         this.fd = file;
     } else {
         this.fd = fs.openSync(file, 'r');
     }
-
-    this.line = '';
-
-    this.linesCache = [];
-
-    this.newLineCharacter = options.newLineCharacter;
-
-    this.lastBytePosition = null;
-
-    this.fdPosition = 0;
 }
 
-LineByLine.prototype._extractLines = function(buffer) {
-    var line;
-    var lines = [];
-    var bufferPosition = 0;
+LineByLine.prototype = {
+    readUntilLine: function() {
+        var chunkSize = this.options.readChunk;
 
-    var lastNewLineBufferPosition = 0;
-    while (true) {
-        var bufferPositionValue = buffer[bufferPosition++];
+        var bufferHistory = [];
 
-        if (bufferPositionValue === this.newLineCharacter) {
-            line = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-            lines.push(line);
-            lastNewLineBufferPosition = bufferPosition;
-        } else if (!bufferPositionValue) {
-            break;
-        }
-    }
+        var found = false;
+        var newLinePos = 0;
 
-    var leftovers = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-    if (leftovers.length) {
-        lines.push(leftovers);
-    }
+        while (!found) {
+            var bufferData = new Buffer(chunkSize);
 
-    return lines;
-};
+            var bytesRead = fs.readSync(this.fd, bufferData, 0, chunkSize);
 
-LineByLine.prototype._readChunk = function(lineLeftovers) {
-    var bufferData = new Buffer(this.options.readChunk);
+            if (bytesRead < chunkSize) {
+                bufferData = bufferData.slice(0, bytesRead);
+                bufferHistory.push(bufferData);
+                this.eofReached = true;
+            } else {
+                bufferHistory.push(bufferData);
+            }
 
-    var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
-    this.fdPosition = this.fdPosition + bytesRead;
+            for (var bufferPos = 0; bufferPos < bytesRead; bufferPos++) {
+                var bufferPosValue = bufferData[bufferPos];
 
-    if (bytesRead < this.options.readChunk) {
-        this.eofReached = true;
-        bufferData = bufferData.slice(0, bytesRead);
-    }
+                if (bufferPosValue === this.newLineCharacter) {
+                    found = true;
+                    break;
+                } else {
+                    newLinePos++;
+                }
+            }
 
-    if (bytesRead) {
-        this.linesCache = this._extractLines(bufferData);
-
-        if (lineLeftovers) {
-            this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
-        }
-    }
-
-    return bytesRead;
-};
-
-LineByLine.prototype.next = function() {
-    var line = false;
-
-    if (this.eofReached && this.linesCache.length === 0) {
-        return line;
-    }
-
-    var bytesRead;
-
-    if (!this.linesCache.length) {
-        bytesRead = this._readChunk();
-    }
-
-    if (this.linesCache.length) {
-        line = this.linesCache.shift();
-
-        var lastLineCharacter = line[line.length-1];
-
-        if (lastLineCharacter !== 0x0a) {
-            bytesRead = this._readChunk(line);
-
-            if (bytesRead) {
-                line = this.linesCache.shift();
+            if (this.eofReached) {
+                break;
             }
         }
-    }
 
-    if (this.eofReached && this.linesCache.length === 0) {
-        fs.closeSync(this.fd);
-        this.fd = null;
-    }
+        var total = Buffer.concat(bufferHistory);
+        var line = total.slice(0, newLinePos);
 
-    if (line && line[line.length-1] === this.newLineCharacter) {
-        line = line.slice(0, line.length-1);
-    }
+        var leftovers = total.slice(newLinePos+1, total.length); // +1 because of the new line
 
-    return line;
+        if (!leftovers.length) {
+            leftovers = null;
+        }
+
+        return [line, leftovers];
+    },
+    hasNewLine: function(buffer) {
+        var newLinePos = 0;
+
+        for (var bufferPos = 0; bufferPos < buffer.length; bufferPos++) {
+            var bufferPosValue = buffer[bufferPos];
+
+            if (bufferPosValue === this.newLineCharacter) {
+                break;
+            } else {
+                newLinePos++;
+            }
+        }
+
+        if (newLinePos === buffer.length) {
+            return false;
+        } else {
+            return newLinePos;
+        }
+    },
+    next: function() {
+        if (this.eofReached && !this.leftovers) {
+            if (this.fd) {
+                fs.closeSync(this.fd);
+                this.fd = null;
+            }
+            return false;
+        }
+
+        var line, read, leftovers;
+
+        if (!this.leftovers) {
+            read = this.readUntilLine();
+            line = read[0];
+            leftovers = read[1];
+            this.leftovers = leftovers;
+        } else {
+            var newLinePos = this.hasNewLine(this.leftovers);
+
+            if (!newLinePos) {
+                read = this.readUntilLine();
+                line = Buffer.concat([this.leftovers, read[0]]);
+                leftovers = read[1];
+                this.leftovers = leftovers;
+            } else {
+                line = this.leftovers.slice(0, newLinePos);
+                this.leftovers = this.leftovers.slice(newLinePos+1, this.leftovers.length); //+1 because of the new line
+                if (!this.leftovers.length) {
+                    this.leftovers = null;
+                }
+            }
+        }
+
+        return line;
+    }
 };
 
 module.exports = LineByLine;
