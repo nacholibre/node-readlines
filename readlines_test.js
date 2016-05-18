@@ -38,4 +38,17 @@ describe('Line by line', function() {
         assert(liner.next() === false);
         assert(liner.fd === null);
     });
+
+    it('should read empty lines', function () {
+        var filename = __dirname + '/dummy_files/withEmptyLines.txt';
+        var liner = new lineByLine(filename);
+
+        assert(liner.next().toString('ascii') === 'hello');
+        assert(liner.next().toString('ascii') === 'hello4');
+        assert(liner.next().toString('ascii') === '');
+        assert(liner.next().toString('ascii') === 'hello2');
+        assert(liner.next().toString('ascii') === 'hello3');
+        assert(liner.next() === false);
+        assert(liner.fd === null);
+    });
 });
