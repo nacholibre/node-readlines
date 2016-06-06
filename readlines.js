@@ -90,18 +90,7 @@ LineByLine.prototype._readChunk = function(lineLeftovers) {
 
 LineByLine.prototype.reset = function() {
 
-    this.bufferData = null;
-    this.bytesRead = 0;
-
-    this.bufferPosition = 0;
     this.eofReached = false;
-
-    this.line = '';
-
-    this.linesCache = [];
-
-    this.lastBytePosition = null;
-
     this.fdPosition = 0;
     
     return this.fdPosition;
