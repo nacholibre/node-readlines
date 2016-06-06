@@ -29,11 +29,6 @@ function LineByLine(file, options) {
 }
 
 LineByLine.prototype.reset = function() {
-    if (this.eofReached) {
-        //cant reset if end is reached
-        return;
-    }
-
     this.bufferData = null;
     this.bytesRead = 0;
 
