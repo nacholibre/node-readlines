@@ -68,24 +68,26 @@ LineByLine.prototype._extractLines = function(buffer) {
 
 LineByLine.prototype._readChunk = function(lineLeftovers) {
     var bufferData = new Buffer(this.options.readChunk);
-
-    var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
-    this.fdPosition = this.fdPosition + bytesRead;
-
-    if (bytesRead < this.options.readChunk) {
-        this.eofReached = true;
-        bufferData = bufferData.slice(0, bytesRead);
-    }
-
-    if (bytesRead) {
-        this.linesCache = this._extractLines(bufferData);
-
-        if (lineLeftovers) {
-            this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
+    if(this.fd){
+        var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
+        this.fdPosition = this.fdPosition + bytesRead;
+    
+        if (bytesRead < this.options.readChunk) {
+            this.eofReached = true;
+            bufferData = bufferData.slice(0, bytesRead);
         }
+    
+        if (bytesRead) {
+            this.linesCache = this._extractLines(bufferData);
+    
+            if (lineLeftovers) {
+                this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
+            }
+        }
+    
+        return bytesRead;
     }
-
-    return bytesRead;
+    return this.fd;
 };
 
 LineByLine.prototype.reset = function() {
