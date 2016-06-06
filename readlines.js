@@ -124,8 +124,7 @@ LineByLine.prototype.next = function() {
     }
 
     if (this.eofReached && this.linesCache.length === 0) {
-        fs.closeSync(this.fd);
-        this.fd = null;
+        this.close();
     }
 
     if (line && line[line.length-1] === this.newLineCharacter) {
@@ -133,6 +132,12 @@ LineByLine.prototype.next = function() {
     }
 
     return line;
+};
+
+LineByLine.prototype.close = function() {
+    fs.closeSync(this.fd);
+    this.fd = null;
+    return this.fd;
 };
 
 module.exports = LineByLine;
