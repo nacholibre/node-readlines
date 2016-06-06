@@ -104,6 +104,7 @@ LineByLine.prototype.reset = function() {
 
     this.fdPosition = 0;
     
+    return bytesRead;
 };
     
 LineByLine.prototype.next = function() {
