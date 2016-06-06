@@ -27,6 +27,10 @@ Install with
 Returns `buffer` with the line data without the `newLineCharacter` or `false` if end of file is reached.
 
 ---------------------------------------
+###readlines.reset()
+Resets the pointer and starts from the beginning of the file. This works only if the end is not reached.
+
+---------------------------------------
 
 ##Example
 ```javascript
