@@ -15,7 +15,24 @@ function LineByLine(file, options) {
         options.newLineCharacter = options.newLineCharacter.charCodeAt(0);
     }
 
+    if (typeof file === 'number') {
+        this.fd = file;
+    } else {
+        this.fd = fs.openSync(file, 'r');
+    }
+
     this.options = options;
+
+    this.newLineCharacter = options.newLineCharacter;
+
+    this.reset();
+}
+
+LineByLine.prototype.reset = function() {
+    if (this.eofReached) {
+        //cant reset if end is reached
+        return;
+    }
 
     this.bufferData = null;
     this.bytesRead = 0;
@@ -23,22 +40,14 @@ function LineByLine(file, options) {
     this.bufferPosition = 0;
     this.eofReached = false;
 
-    if (typeof file === 'number') {
-        this.fd = file;
-    } else {
-        this.fd = fs.openSync(file, 'r');
-    }
-
     this.line = '';
 
     this.linesCache = [];
 
-    this.newLineCharacter = options.newLineCharacter;
-
     this.lastBytePosition = null;
 
     this.fdPosition = 0;
-}
+};
 
 LineByLine.prototype._extractLines = function(buffer) {
     var line;

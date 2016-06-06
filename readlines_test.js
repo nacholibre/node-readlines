@@ -51,4 +51,20 @@ describe('Line by line', function() {
         assert(liner.next() === false);
         assert(liner.fd === null);
     });
+
+    it('should reset and start from the beggining', function() {
+        var filename = __dirname + '/dummy_files/normalFile.txt';
+        var liner = new lineByLine(filename, {'readChunk': 16});
+
+        assert(liner.next().toString('ascii') === 'google.com');
+        assert(liner.next().toString('ascii') === 'yahoo.com');
+
+        liner.reset()
+
+        assert(liner.next().toString('ascii') === 'google.com');
+        assert(liner.next().toString('ascii') === 'yahoo.com');
+        assert(liner.next().toString('ascii') === 'yandex.ru');
+        assert(liner.next() === false);
+        assert(liner.fd === null);
+    });
 });
