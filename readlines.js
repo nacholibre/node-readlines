@@ -68,26 +68,36 @@ LineByLine.prototype._extractLines = function(buffer) {
 
 LineByLine.prototype._readChunk = function(lineLeftovers) {
     var bufferData = new Buffer(this.options.readChunk);
-
-    var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
-    this.fdPosition = this.fdPosition + bytesRead;
-
-    if (bytesRead < this.options.readChunk) {
-        this.eofReached = true;
-        bufferData = bufferData.slice(0, bytesRead);
-    }
-
-    if (bytesRead) {
-        this.linesCache = this._extractLines(bufferData);
-
-        if (lineLeftovers) {
-            this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
+    if(this.fd){
+        var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
+        this.fdPosition = this.fdPosition + bytesRead;
+    
+        if (bytesRead < this.options.readChunk) {
+            this.eofReached = true;
+            bufferData = bufferData.slice(0, bytesRead);
         }
+    
+        if (bytesRead) {
+            this.linesCache = this._extractLines(bufferData);
+    
+            if (lineLeftovers) {
+                this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
+            }
+        }
+    
+        return bytesRead;
     }
-
-    return bytesRead;
+    return this.fd;
 };
 
+LineByLine.prototype.reset = function() {
+
+    this.eofReached = false;
+    this.fdPosition = 0;
+    
+    return this.fdPosition;
+};
+    
 LineByLine.prototype.next = function() {
     var line = false;
 
@@ -116,8 +126,7 @@ LineByLine.prototype.next = function() {
     }
 
     if (this.eofReached && this.linesCache.length === 0) {
-        fs.closeSync(this.fd);
-        this.fd = null;
+        this.close();
     }
 
     if (line && line[line.length-1] === this.newLineCharacter) {
@@ -125,6 +134,12 @@ LineByLine.prototype.next = function() {
     }
 
     return line;
+};
+
+LineByLine.prototype.close = function() {
+    fs.closeSync(this.fd);
+    this.fd = null;
+    return this.fd;
 };
 
 module.exports = LineByLine;

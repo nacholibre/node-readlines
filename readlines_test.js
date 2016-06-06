@@ -51,4 +51,32 @@ describe('Line by line', function() {
         assert(liner.next() === false);
         assert(liner.fd === null);
     });
+    
+    it('should return to the beginning of the file', function () {
+        var filename = __dirname + '/dummy_files/twoLineFile.txt';
+
+        var liner = new lineByLine(filename);
+
+        assert(liner.next().toString('ascii') === 'hello');
+        assert(liner.next().toString('ascii') === 'hello2');
+        assert(liner.next() === false);
+        assert(liner.reset() === 0);
+        assert(liner.next().toString('ascii') === 'hello');
+        assert(liner.next().toString('ascii') === 'hello2');
+        assert(liner.next() === false);
+        assert(liner.fd === null);
+    });
+    
+    it('close the file', function () {
+        var filename = __dirname + '/dummy_files/twoLineFile.txt';
+
+        var liner = new lineByLine(filename);
+
+        assert(liner.next().toString('ascii') === 'hello');
+        assert(liner.next().toString('ascii') === 'hello2');
+        assert(liner.next() === false);
+        assert(liner.close() === null);
+        assert(liner.fd === null);
+        assert(liner.next() === null);
+    });
 });
