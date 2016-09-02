@@ -28,6 +28,20 @@ function LineByLine(file, options) {
     this.reset();
 }
 
+LineByLine.prototype._searchInBuffer = function(buffer, hexNeedle) {
+    var found = -1;
+
+    for (var i = 0; i <= buffer.length; i++) {
+        var b_byte = buffer[i];
+        if (b_byte === hexNeedle) {
+            found = i;
+            break;
+        }
+    }
+
+    return found;
+};
+
 LineByLine.prototype.reset = function() {
     this.bufferData = null;
     this.bytesRead = 0;
@@ -86,7 +100,7 @@ LineByLine.prototype._readChunk = function(lineLeftovers) {
 
     var lastBuffer = buffers[buffers.length-1];
 
-    while(buffers[buffers.length-1].indexOf(this.options.newLineCharacter) === -1) {
+    while(this._searchInBuffer(buffers[buffers.length-1], this.options.newLineCharacter) === -1) {
         //new line character doesn't exist in the readed data, so we must read
         //again
         var newBuffer = new Buffer(this.options.readChunk);
