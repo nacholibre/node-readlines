@@ -67,4 +67,21 @@ describe('Line by line', function() {
         assert(liner.next() === false);
         assert(liner.fd === null);
     });
+
+    it('should read big lines', function() {
+        var filename = __dirname + '/dummy_files/bigLines.json';
+        var liner = new lineByLine(filename);
+
+        var parsedLine = JSON.parse(liner.next().toString('ascii'));
+        assert(parsedLine);
+
+        var parsedLine = JSON.parse(liner.next().toString('ascii'));
+        assert(parsedLine);
+
+        var parsedLine = JSON.parse(liner.next().toString('ascii'));
+        assert(parsedLine);
+
+        assert(liner.next() === false);
+        assert(liner.fd === null);
+    });
 });

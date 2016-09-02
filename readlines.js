@@ -73,12 +73,37 @@ LineByLine.prototype._extractLines = function(buffer) {
 LineByLine.prototype._readChunk = function(lineLeftovers) {
     var bufferData = new Buffer(this.options.readChunk);
 
+    var totalBytesRead = 0;
+
     var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
+
+    totalBytesRead = totalBytesRead + bytesRead;
+
     this.fdPosition = this.fdPosition + bytesRead;
+
+    var buffers = [];
+    buffers.push(bufferData);
+
+    var lastBuffer = buffers[buffers.length-1];
+
+    while(buffers[buffers.length-1].indexOf(this.options.newLineCharacter) === -1) {
+        //new line character doesn't exist in the readed data, so we must read
+        //again
+        var newBuffer = new Buffer(this.options.readChunk);
+
+        var bytesRead = fs.readSync(this.fd, newBuffer, 0, this.options.readChunk, this.fdPosition);
+        totalBytesRead = totalBytesRead + bytesRead;
+
+        this.fdPosition = this.fdPosition + bytesRead;
+
+        buffers.push(newBuffer);
+    }
+
+    bufferData = Buffer.concat(buffers);
 
     if (bytesRead < this.options.readChunk) {
         this.eofReached = true;
-        bufferData = bufferData.slice(0, bytesRead);
+        bufferData = bufferData.slice(0, totalBytesRead);
     }
 
     if (bytesRead) {
@@ -89,7 +114,7 @@ LineByLine.prototype._readChunk = function(lineLeftovers) {
         }
     }
 
-    return bytesRead;
+    return totalBytesRead;
 };
 
 LineByLine.prototype.next = function() {
