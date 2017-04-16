@@ -1,5 +1,6 @@
 'use strict';
 
+var os = require('os');
 var fs = require('fs');
 
 function LineByLine(file, options) {
@@ -149,12 +150,25 @@ LineByLine.prototype.next = function() {
 
         var lastLineCharacter = line[line.length-1];
 
-        if (lastLineCharacter !== 0x0a) {
-            bytesRead = this._readChunk(line);
+        while(line.toString().indexOf(os.EOL))
+        {
+          if (lastLineCharacter !== 0x0a && !this.eofReached) {
+              bytesRead = this._readChunk(line);
 
-            if (bytesRead) {
-                line = this.linesCache.shift();
-            }
+              if (bytesRead) {
+                  line = this.linesCache.shift();
+              }
+          }
+          if(line.toString().indexOf(os.EOL) > 0)
+          {
+            var enterPos = line.toString().indexOf(os.EOL);
+            line = line.slice(0, line.toString().indexOf(os.EOL));
+            this.fdPosition = this.fdPosition - (enterPos - line.length);
+            break;
+          }
+          if(this.eofReached) {
+            break;
+          }
         }
     }
 
