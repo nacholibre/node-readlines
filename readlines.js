@@ -85,35 +85,22 @@ LineByLine.prototype._extractLines = function(buffer) {
 };
 
 LineByLine.prototype._readChunk = function(lineLeftovers) {
-    var bufferData = new Buffer(this.options.readChunk);
-
     var totalBytesRead = 0;
 
-    var bytesRead = fs.readSync(this.fd, bufferData, 0, this.options.readChunk, this.fdPosition);
-
-    totalBytesRead = totalBytesRead + bytesRead;
-
-    this.fdPosition = this.fdPosition + bytesRead;
-
+    var bytesRead;
     var buffers = [];
-    buffers.push(bufferData);
+    do {
+        var readBuffer = new Buffer(this.options.readChunk);
 
-    var lastBuffer = buffers[buffers.length-1];
-
-    while(this._searchInBuffer(buffers[buffers.length-1], this.options.newLineCharacter) === -1) {
-        //new line character doesn't exist in the readed data, so we must read
-        //again
-        var newBuffer = new Buffer(this.options.readChunk);
-
-        var bytesRead = fs.readSync(this.fd, newBuffer, 0, this.options.readChunk, this.fdPosition);
+        bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
         totalBytesRead = totalBytesRead + bytesRead;
 
         this.fdPosition = this.fdPosition + bytesRead;
 
-        buffers.push(newBuffer);
-    }
+        buffers.push(readBuffer);
+    } while (bytesRead && this._searchInBuffer(buffers[buffers.length-1], this.options.newLineCharacter) === -1);
 
-    bufferData = Buffer.concat(buffers);
+    var bufferData = Buffer.concat(buffers);
 
     if (bytesRead < this.options.readChunk) {
         this.eofReached = true;
