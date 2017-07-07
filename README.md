@@ -7,9 +7,9 @@ Install with
 
 ---------------------------------------
 
-##Documentation
-###new readlines(filename, [options]);
-###new readlines(fd, [options]);
+## Documentation
+### new readlines(filename, [options]);
+### new readlines(fd, [options]);
 
 **Arguments**
 
@@ -23,16 +23,16 @@ Install with
 
 ---------------------------------------
 
-###readlines.next()
+### readlines.next()
 Returns `buffer` with the line data without the `newLineCharacter` or `false` if end of file is reached.
 
 ---------------------------------------
-###readlines.reset()
+### readlines.reset()
 Resets the pointer and starts from the beginning of the file. This works only if the end is not reached.
 
 ---------------------------------------
 
-##Example
+## Example
 ```javascript
 var lineByLine = require('n-readlines');
 var liner = new lineByLine('./textFile.txt');
