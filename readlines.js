@@ -85,6 +85,10 @@ LineByLine.prototype._extractLines = function(buffer) {
 };
 
 LineByLine.prototype._readChunk = function(lineLeftovers) {
+    if (this.eofReached === true) {
+      return 0;
+    }
+
     var bufferData = new Buffer(this.options.readChunk);
 
     var totalBytesRead = 0;
