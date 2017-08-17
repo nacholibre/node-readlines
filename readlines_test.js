@@ -28,6 +28,25 @@ describe('Line by line', function() {
         assert(liner.fd === null);
     });
 
+    it('should get all lines if there is no new lines', function () {
+        var filename = __dirname + '/dummy_files/noNewLinesFile.txt';
+
+        var liner = new lineByLine(filename);
+
+        assert(liner.next().toString('ascii') === 'no new line');
+        assert(liner.next() === false);
+        assert(liner.fd === null);
+    });
+
+    it('should handle empty files', function () {
+        var filename = __dirname + '/dummy_files/emptyFile.txt';
+
+        var liner = new lineByLine(filename);
+
+        assert(liner.next() === false);
+        assert(liner.fd === null);
+    });
+
     it('should read right between two chunks', function () {
         var filename = __dirname + '/dummy_files/normalFile.txt';
         var liner = new lineByLine(filename, {'readChunk': 16});
