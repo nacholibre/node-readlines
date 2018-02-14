@@ -56,30 +56,29 @@ LineByLine.prototype.reset = function() {
 };
 
 LineByLine.prototype._extractLines = function(buffer) {
-  var line;
-  var lines = [];
-  var bufferPosition = 0;
+    var line;
+    var lines = [];
 
-  var lastNewLineBufferPosition = 0;
-  while (true) {
-      var bufferPositionValue = buffer[bufferPosition++];
+    var lastNewLine = 0;
+    while (true) {
+        var nextPos = buffer.indexOf(this.newLineCharacter, lastNewLine) + 1;
 
-      if (bufferPositionValue === this.newLineCharacter) {
-          line = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-          lines.push(line);
-          lastNewLineBufferPosition = bufferPosition;
-      } else if (!bufferPositionValue) {
-          break;
-      }
-  }
+        if (nextPos > 0) {
+            line = buffer.slice(lastNewLine, nextPos);
+            lines.push(line);
+            lastNewLine = nextPos;
+        } else {
+            line = buffer.slice(lastNewLine);
+            if (line.length) {
+                lines.push(line);
+            }
 
-  var leftovers = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-  if (leftovers.length) {
-      lines.push(leftovers);
-  }
+            return lines;
+        }
+    }
 
-  return lines;
 };
+
 
 LineByLine.prototype._readChunk = function() {
   var totalBytesRead = 0;
