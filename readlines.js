@@ -156,7 +156,7 @@ LineByLine.prototype.next = function() {
     // if last character in line is not a line ending
     // get rest of line, if there are lines to get
     if (!this.eofReached && lastLineCharacter() !== this.newLineCharacter) {
-        var bytesRead = this._readChunk();
+        this._readChunk();
 
         var restOfLine = this.linesCache.shift();
         line = Buffer.concat([line, restOfLine]);
