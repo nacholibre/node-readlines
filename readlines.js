@@ -129,7 +129,7 @@ LineByLine.prototype._readChunk = function() {
         bufferData = bufferData.slice(0, totalBytesRead);
     }
 
-    if (bytesRead) {
+    if (totalBytesRead) {
         this.linesCache = this._extractLines(bufferData);
     }
 };
