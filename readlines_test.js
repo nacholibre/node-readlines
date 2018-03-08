@@ -1,6 +1,9 @@
 'use strict';
 
 var lineByLine = require('./readlines.js');
+var runThrough = require('./readlines_test_helpers.js').runThrough;
+var execSync = require('child_process').execSync;
+
 
 var assert = require('assert');
 
@@ -102,5 +105,16 @@ describe('Line by line', function() {
 
         assert(liner.next() === false);
         assert(liner.fd === null);
+    });
+
+    it('should log time output', function() {
+        var file = 'movies.csv';
+        var filename = __dirname + '/dummy_files/' + file;
+        var trials = 50;
+        var wcBuffer = execSync('wc -l ' + filename);
+        var numOfLines = wcBuffer.toString('ascii').trim().split(' ')[0];
+        var avg = runThrough(filename, lineByLine, trials);
+        console.log('average time in seconds to parse', file, '(' + numOfLines, 'line file):', avg.toFixed(5));
+        assert(true);
     });
 });
