@@ -3,7 +3,9 @@
   "version": "0.2.8",
   "description": "Read file line by line without buffering the whole file in memory.",
   "main": "./readlines.js",
-  "dependencies": {},
+  "dependencies": {
+    "buf-indexof": "^1.0.1"
+  },
   "repository": {
     "type": "git",
     "url": "http://github.com/nacholibre/node-readlines.git"

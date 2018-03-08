@@ -1,6 +1,7 @@
 'use strict';
 
 var fs = require('fs');
+var bufIndexof = require('buf-indexof');
 
 function LineByLine(file, options) {
     options = options || {};
@@ -28,18 +29,15 @@ function LineByLine(file, options) {
     this.reset();
 }
 
-LineByLine.prototype._searchInBuffer = function(buffer, hexNeedle) {
-    var found = -1;
-
-    for (var i = 0; i <= buffer.length; i++) {
+LineByLine.prototype._reachedEndOfAtLeastOneLine = function(buffer, hexNeedle) {
+    for (var i = 0; i < buffer.length; i++) {
         var b_byte = buffer[i];
         if (b_byte === hexNeedle) {
-            found = i;
-            break;
+            return true;
         }
     }
 
-    return found;
+    return false;
 };
 
 LineByLine.prototype.reset = function() {
@@ -84,7 +82,31 @@ LineByLine.prototype._extractLines = function(buffer) {
     return lines;
 };
 
-LineByLine.prototype._readChunk = function(lineLeftovers) {
+LineByLine.prototype._extractLines = function(buffer) {
+    var line;
+    var lines = [];
+
+    var lastNewLine = 0;
+    while (true) {
+        var nextPos = bufIndexof(buffer, this.newLineCharacter, lastNewLine) + 1;
+
+        if (nextPos > 0) {
+            line = buffer.slice(lastNewLine, nextPos);
+            lines.push(line);
+            lastNewLine = nextPos;
+        } else {
+            line = buffer.slice(lastNewLine);
+            if (line.length) {
+                lines.push(line);
+            }
+
+            return lines;
+        }
+    }
+};
+
+
+LineByLine.prototype._readChunk = function() {
     var totalBytesRead = 0;
 
     var bytesRead;
@@ -98,7 +120,7 @@ LineByLine.prototype._readChunk = function(lineLeftovers) {
         this.fdPosition = this.fdPosition + bytesRead;
 
         buffers.push(readBuffer);
-    } while (bytesRead && this._searchInBuffer(buffers[buffers.length-1], this.options.newLineCharacter) === -1);
+    } while (bytesRead && !this._reachedEndOfAtLeastOneLine(buffers[buffers.length-1], this.options.newLineCharacter));
 
     var bufferData = Buffer.concat(buffers);
 
@@ -107,15 +129,9 @@ LineByLine.prototype._readChunk = function(lineLeftovers) {
         bufferData = bufferData.slice(0, totalBytesRead);
     }
 
-    if (bytesRead) {
+    if (totalBytesRead) {
         this.linesCache = this._extractLines(bufferData);
-
-        if (lineLeftovers) {
-            this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
-        }
     }
-
-    return totalBytesRead;
 };
 
 LineByLine.prototype.next = function() {
@@ -125,33 +141,36 @@ LineByLine.prototype.next = function() {
         return line;
     }
 
-    var bytesRead;
-
     if (!this.linesCache.length) {
-        bytesRead = this._readChunk();
+        this._readChunk();
     }
 
     if (this.linesCache.length) {
         line = this.linesCache.shift();
+    }
 
-        var lastLineCharacter = line[line.length-1];
+    function lastLineCharacter() {
+        return line && line[line.length-1];
+    }
 
-        if (lastLineCharacter !== 0x0a) {
-            bytesRead = this._readChunk(line);
+    // if last character in line is not a line ending
+    // get rest of line, if there are lines to get
+    if (!this.eofReached && lastLineCharacter() !== this.newLineCharacter) {
+        this._readChunk();
 
-            if (bytesRead) {
-                line = this.linesCache.shift();
-            }
-        }
+        var restOfLine = this.linesCache.shift();
+        line = Buffer.concat([line, restOfLine]);
+    }
+
+    // if last character in line is a line ending
+    // get rid of endOfLineCharacter
+    if (lastLineCharacter() === this.newLineCharacter) {
+        line = line.slice(0, line.length-1);
     }
 
     if (this.eofReached && this.linesCache.length === 0) {
         fs.closeSync(this.fd);
         this.fd = null;
-    }
-
-    if (line && line[line.length-1] === this.newLineCharacter) {
-        line = line.slice(0, line.length-1);
     }
 
     return line;
