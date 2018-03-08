@@ -12,7 +12,7 @@ function calcTime(file, lineVersion) {
 }
 
 function average(arr) {
-    var sum = arr.reduce((acc, cur)=>{
+    var sum = arr.reduce(function(acc, cur) {
       acc += cur;
       return acc;
     }, 0);
