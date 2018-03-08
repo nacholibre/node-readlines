@@ -30,5 +30,5 @@ function runThrough(file, lineVersion, trials) {
 }
 
 module.exports = {
-    runThrough
+    runThrough: runThrough
 };
