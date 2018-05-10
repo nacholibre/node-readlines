@@ -1,7 +1,7 @@
 'use strict';
 
 var lineByLine = require('./readlines.js');
-var liner = new lineByLine('./dummy_files/twoLineFile.txt');
+var liner = new lineByLine('./eiffel.geojson');
 
 var line;
 var lineNumber = 0;
