@@ -45,18 +45,8 @@ class LineByLine {
     }
 
     reset() {
-        this.bufferData = null;
-        this.bytesRead = 0;
-
-        this.bufferPosition = 0;
         this.eofReached = false;
-
-        this.line = '';
-
         this.linesCache = [];
-
-        this.lastBytePosition = null;
-
         this.fdPosition = 0;
     }
 
