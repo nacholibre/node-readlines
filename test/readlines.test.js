@@ -90,11 +90,20 @@ test('should read big lines', (t) => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/bigLines.json'));
     
 
-    t.ok(JSON.parse(liner.next().toString('ascii')), 'line 0: valid JSON');
-    t.ok(JSON.parse(liner.next().toString('ascii')), 'line 1: valid JSON');
-    t.ok(JSON.parse(liner.next().toString('ascii')), 'line 2: valid JSON');
+    t.ok(JSON.parse(liner.next()), 'line 0: valid JSON');
+    t.ok(JSON.parse(liner.next()), 'line 1: valid JSON');
+    t.ok(JSON.parse(liner.next()), 'line 2: valid JSON');
 
     t.equals(liner.next(), false, 'line 3: false');
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
+});
+
+test('Non-Latin Char JSON', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/eiffel.geojson'));
+
+    t.ok(JSON.parse(liner.next().toString()), 'line 0: valid JSON');
+
     t.equals(liner.fd, null, 'fd is null');
     t.end();
 });
