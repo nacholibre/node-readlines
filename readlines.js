@@ -99,7 +99,7 @@ class LineByLine {
             bufferData = bufferData.slice(0, totalBytesRead);
         }
 
-        if (bytesRead) {
+        if (totalBytesRead) {
             this.linesCache = this._extractLines(bufferData);
 
             if (lineLeftovers) {
