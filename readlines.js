@@ -50,6 +50,11 @@ class LineByLine {
         this.fdPosition = 0;
     }
 
+    close() {
+        fs.closeSync(this.fd);
+        this.fd = null;
+    }
+
     _extractLines(buffer) {
         let line;
         const lines = [];
@@ -111,6 +116,8 @@ class LineByLine {
     }
 
     next() {
+        if (!this.fd) return false;
+
         let line = false;
 
         if (this.eofReached && this.linesCache.length === 0) {
@@ -138,8 +145,7 @@ class LineByLine {
         }
 
         if (this.eofReached && this.linesCache.length === 0) {
-            fs.closeSync(this.fd);
-            this.fd = null;
+            this.close();
         }
 
         if (line && line[line.length-1] === this.newLineCharacter) {

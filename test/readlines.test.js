@@ -107,3 +107,15 @@ test('Non-Latin Char JSON', (t) => {
     t.equals(liner.fd, null, 'fd is null');
     t.end();
 });
+
+test('Manually Close', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'));
+
+    t.equals(liner.next().toString(), 'google.com', 'line 0: google.com');
+
+    liner.close();
+    t.equals(liner.fd, null, 'fd is null');
+
+    t.equals(liner.next(), false, 'line after close: false');
+    t.end();
+});
