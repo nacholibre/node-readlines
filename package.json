@@ -21,13 +21,13 @@
     "readlines"
   ],
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=6.x.x"
   },
   "devDependencies": {
-    "mocha": "^2.0.1"
+    "tape": "^4.9.0"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha *_test.js"
+    "test": "tape test/*.test.js"
   },
   "author": "Yoan Arnaudov <jonidev@gmail.com>",
   "license": "MIT"

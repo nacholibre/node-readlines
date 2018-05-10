@@ -1,106 +1,100 @@
 'use strict';
 
-var lineByLine = require('./readlines.js');
+const lineByLine = require('../readlines.js');
+const path = require('path');
+const test = require('tape');
 
-var assert = require('assert');
+test('should get all lines', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/twoLineFile.txt'));
 
-describe('Line by line', function() {
-    it('should get all lines', function () {
-        var filename = __dirname + '/dummy_files/twoLineFile.txt';
+    t.equals(liner.next().toString('ascii'), 'hello', 'line 0: hello');
+    t.equals(liner.next().toString('ascii'), 'hello2', 'line 1: hello2');
+    t.equals(liner.next(), false, 'line 3: false');
+    t.equals(liner.next(), false, 'line 4: false');
+    t.equals(liner.fd, null, 'fd null');
+    t.end();
+});
 
-        var liner = new lineByLine(filename);
+test('should get all lines even if the file doesnt end with new line', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/badEndFile.txt'));
 
-        assert(liner.next().toString('ascii') === 'hello');
-        assert(liner.next().toString('ascii') === 'hello2');
-        assert(liner.next() === false);
-        assert(liner.next() === false);
-        assert(liner.fd === null);
+    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
+    t.equals(liner.next(), false, 'line 3: false');
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
+});
+
+test('should get all lines if there is no new lines', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/noNewLinesFile.txt'));
+
+    t.equals(liner.next().toString('ascii'), 'no new line', 'line 0: no new line');
+    t.equals(liner.next(), false, 'line 1: false');
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
+});
+
+test('should handle empty files', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/emptyFile.txt'));
+
+    t.equals(liner.next(), false, 'line 0: false');
+    t.equals(liner.fd, null, 'line 0: false');
+    t.end();
+});
+
+test('should read right between two chunks', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'), {
+        readChunk: 16
     });
 
-    it('should get all lines even if the file doesnt end with new line', function () {
-        var filename = __dirname + '/dummy_files/badEndFile.txt';
+    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
+    t.equals(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
+    t.equals(liner.next(), false, 'line 3: false');
+    t.equals(liner.fd, null, 'fs is null');
+    t.end();
+});
 
-        var liner = new lineByLine(filename);
+test('should read empty lines', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/withEmptyLines.txt'));
 
-        assert(liner.next().toString('ascii') === 'google.com');
-        assert(liner.next().toString('ascii') === 'yahoo.com');
-        assert(liner.next() === false);
-        assert(liner.fd === null);
+    t.equals(liner.next().toString('ascii'), 'hello', 'line 0: hello');
+    t.equals(liner.next().toString('ascii'), 'hello4', 'line 1: hello4');
+    t.equals(liner.next().toString('ascii'), '', 'line 2: ');
+    t.equals(liner.next().toString('ascii'), 'hello2', 'line 3: hello2');
+    t.equals(liner.next().toString('ascii'), 'hello3', 'line 4: hello3');
+    t.equals(liner.next(), false, 'line 5: false');
+    t.equals(liner.fd, null, 'fs is null');
+    t.end();
+});
+
+test('should reset and start from the beggining', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'), {
+        readChunk: 16
     });
 
-    it('should get all lines if there is no new lines', function () {
-        var filename = __dirname + '/dummy_files/noNewLinesFile.txt';
+    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
 
-        var liner = new lineByLine(filename);
+    liner.reset()
 
-        assert(liner.next().toString('ascii') === 'no new line');
-        assert(liner.next() === false);
-        assert(liner.fd === null);
-    });
+    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
+    t.equals(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
+    t.equals(liner.next(), false, 'line 3: false');
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
+});
 
-    it('should handle empty files', function () {
-        var filename = __dirname + '/dummy_files/emptyFile.txt';
+test('should read big lines', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/bigLines.json'));
+    
 
-        var liner = new lineByLine(filename);
+    t.ok(JSON.parse(liner.next().toString('ascii')), 'line 0: valid JSON');
+    t.ok(JSON.parse(liner.next().toString('ascii')), 'line 1: valid JSON');
+    t.ok(JSON.parse(liner.next().toString('ascii')), 'line 2: valid JSON');
 
-        assert(liner.next() === false);
-        assert(liner.fd === null);
-    });
-
-    it('should read right between two chunks', function () {
-        var filename = __dirname + '/dummy_files/normalFile.txt';
-        var liner = new lineByLine(filename, {'readChunk': 16});
-
-        assert(liner.next().toString('ascii') === 'google.com');
-        assert(liner.next().toString('ascii') === 'yahoo.com');
-        assert(liner.next().toString('ascii') === 'yandex.ru');
-        assert(liner.next() === false);
-        assert(liner.fd === null);
-    });
-
-    it('should read empty lines', function () {
-        var filename = __dirname + '/dummy_files/withEmptyLines.txt';
-        var liner = new lineByLine(filename);
-
-        assert(liner.next().toString('ascii') === 'hello');
-        assert(liner.next().toString('ascii') === 'hello4');
-        assert(liner.next().toString('ascii') === '');
-        assert(liner.next().toString('ascii') === 'hello2');
-        assert(liner.next().toString('ascii') === 'hello3');
-        assert(liner.next() === false);
-        assert(liner.fd === null);
-    });
-
-    it('should reset and start from the beggining', function() {
-        var filename = __dirname + '/dummy_files/normalFile.txt';
-        var liner = new lineByLine(filename, {'readChunk': 16});
-
-        assert(liner.next().toString('ascii') === 'google.com');
-        assert(liner.next().toString('ascii') === 'yahoo.com');
-
-        liner.reset()
-
-        assert(liner.next().toString('ascii') === 'google.com');
-        assert(liner.next().toString('ascii') === 'yahoo.com');
-        assert(liner.next().toString('ascii') === 'yandex.ru');
-        assert(liner.next() === false);
-        assert(liner.fd === null);
-    });
-
-    it('should read big lines', function() {
-        var filename = __dirname + '/dummy_files/bigLines.json';
-        var liner = new lineByLine(filename);
-
-        var parsedLine = JSON.parse(liner.next().toString('ascii'));
-        assert(parsedLine);
-
-        var parsedLine = JSON.parse(liner.next().toString('ascii'));
-        assert(parsedLine);
-
-        var parsedLine = JSON.parse(liner.next().toString('ascii'));
-        assert(parsedLine);
-
-        assert(liner.next() === false);
-        assert(liner.fd === null);
-    });
+    t.equals(liner.next(), false, 'line 3: false');
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
 });
