@@ -1,7 +1,7 @@
 'use strict';
 
 const lineByLine = require('./readlines.js');
-const liner = new lineByLine('./eiffel.geojson');
+const liner = new lineByLine('./test/fixtures/normalFile.txt');
 
 let line;
 let lineNumber = 0;
