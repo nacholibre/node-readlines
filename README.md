@@ -31,17 +31,22 @@ Returns `buffer` with the line data without the `newLineCharacter` or `false` if
 Resets the pointer and starts from the beginning of the file. This works only if the end is not reached.
 
 ---------------------------------------
+### readlines.close()
+Manually close the open file, subsequent `next()` calls will return false. This works only if the end is not reached.
+
+---------------------------------------
 
 ## Example
 ```javascript
-var lineByLine = require('n-readlines');
-var liner = new lineByLine('./textFile.txt');
+const lineByLine = require('./readlines.js');
+const liner = new lineByLine('./test/fixtures/normalFile.txt');
 
-var line;
-var lineNumber = 0;
+let line;
+let lineNumber = 0;
+
 while (line = liner.next()) {
-    console.log('Line ' + lineNumber + ': ' + line.toString('ascii'));
-    lineNumber++;
+        console.log('Line ' + lineNumber + ': ' + line.toString('ascii'));
+            lineNumber++;
 }
 
 console.log('end of line reached');

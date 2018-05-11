@@ -1,10 +1,11 @@
 'use strict';
 
-var lineByLine = require('./readlines.js');
-var liner = new lineByLine('./dummy_files/twoLineFile.txt');
+const lineByLine = require('./readlines.js');
+const liner = new lineByLine('./test/fixtures/normalFile.txt');
 
-var line;
-var lineNumber = 0;
+let line;
+let lineNumber = 0;
+
 while (line = liner.next()) {
     console.log('Line ' + lineNumber + ': ' + line.toString('ascii'));
     lineNumber++;
