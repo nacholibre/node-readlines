@@ -38,7 +38,7 @@ Manually close the open file, subsequent `next()` calls will return false. This 
 
 ## Example
 ```javascript
-const lineByLine = require('./readlines.js');
+const lineByLine = require('readlines');
 const liner = new lineByLine('./test/fixtures/normalFile.txt');
 
 let line;
