@@ -68,7 +68,7 @@ class LineByLine {
                 line = buffer.slice(lastNewLineBufferPosition, bufferPosition);
                 lines.push(line);
                 lastNewLineBufferPosition = bufferPosition;
-            } else if (!bufferPositionValue) {
+            } else if (bufferPositionValue === undefined) {
                 break;
             }
         }
