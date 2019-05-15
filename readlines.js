@@ -135,7 +135,7 @@ class LineByLine {
 
             const lastLineCharacter = line[line.length-1];
 
-            if (lastLineCharacter !== 0x0a) {
+            if (lastLineCharacter !== this.newLineCharacter) {
                 bytesRead = this._readChunk(line);
 
                 if (bytesRead) {
