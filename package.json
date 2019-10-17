@@ -1,6 +1,6 @@
 {
   "name": "n-readlines",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Read file line by line without buffering the whole file in memory.",
   "main": "./readlines.js",
   "dependencies": {},
