@@ -119,3 +119,14 @@ test('Manually Close', (t) => {
     t.equals(liner.next(), false, 'line after close: false');
     t.end();
 });
+
+test('should correctly processes NULL character in lines', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/withNULL.txt'));
+
+    t.equals(liner.next().toString(), 'line without null', 'line 0: line without null');
+    t.equals(liner.next().toString(), 'line wi'+String.fromCharCode(0)+'th null', 'line 1: line with null');
+    t.equals(liner.next().toString(), 'another line without null', 'line 2: another line without null');
+
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
+})
