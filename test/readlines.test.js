@@ -15,6 +15,25 @@ test('should get all lines', (t) => {
     t.end();
 });
 
+test('let caller supply readSync', (t) => {
+    const data = 'hello\nhello2\n';
+    const pos = 0;
+    const min = (x, y) => x < y ? x : y;
+    function readSync (buf, offset, length, position) {
+	const qty = min(length, data.length - position);
+	buf.write(data.slice(position), 0, qty);
+	return qty;
+    };
+    const liner = new lineByLine('dummy', { readSync });
+
+    t.equals(liner.next().toString('ascii'), 'hello', 'line 0: hello');
+    t.equals(liner.next().toString('ascii'), 'hello2', 'line 1: hello2');
+    t.equals(liner.next(), false, 'line 3: false');
+    t.equals(liner.next(), false, 'line 4: false');
+    t.equals(liner.fd, null, 'fd null');
+    t.end();
+});
+
 test('should get all lines even if the file doesnt end with new line', (t) => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/badEndFile.txt'));
 
