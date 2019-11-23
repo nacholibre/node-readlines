@@ -1,7 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-
 /**
  * @class
  */
@@ -17,12 +15,20 @@ class LineByLine {
             options.newLineCharacter = options.newLineCharacter.charCodeAt(0);
         }
 
-        if (typeof file === 'number') {
-            this.fd = file;
-        } else {
-            this.fd = fs.openSync(file, 'r');
-        }
-
+        if (typeof options.readSync === 'function') {
+   	    this.readSync = options.readSync;
+	    this._close = () => null;
+	    this.fd = true;
+	} else {
+            const fs = require('fs');
+            if (typeof file !== 'number') {
+		this.fd = fs.openSync(file, 'r');
+	    } else {
+		this.fd = file;
+            }
+	    this.readSync = (...options) => fs.readSync(this.fd, ...options);
+	    this._close = () => fs.closeSync(this.fd);
+	}
         this.options = options;
 
         this.newLineCharacter = options.newLineCharacter;
@@ -51,8 +57,8 @@ class LineByLine {
     }
 
     close() {
-        fs.closeSync(this.fd);
-        this.fd = null;
+        this._close();
+	this.fd = null;
     }
 
     _extractLines(buffer) {
@@ -89,7 +95,7 @@ class LineByLine {
         do {
             const readBuffer = new Buffer(this.options.readChunk);
 
-            bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
+            bytesRead = this.readSync(readBuffer, 0, this.options.readChunk, this.fdPosition);
             totalBytesRead = totalBytesRead + bytesRead;
 
             this.fdPosition = this.fdPosition + bytesRead;
