@@ -18,6 +18,7 @@ Install with
 * `options` - Object
   * `readChunk` - Integer number of bytes to read at once. Default: 1024
   * `newLineCharacter` - String new line character, only works with one byte characters for now. Default: `\n` which is `0x0a` hex encoded
+  * `lineTrimCR` bool - If set to true, carriege return character - `0x0a` will be trimmed if found at the end of a line. Default: false
 
 `node-readlines` can handle files without newLineCharacter after the last line
 

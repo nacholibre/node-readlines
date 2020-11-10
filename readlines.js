@@ -11,6 +11,9 @@ class LineByLine {
 
         if (!options.readChunk) options.readChunk = 1024;
 
+        // Trim carriege return CR 0x0D if found at the end of a line.
+        if (!options.lineTrimCR) options.lineTrimCR = false;
+
         if (!options.newLineCharacter) {
             options.newLineCharacter = 0x0a; //linux line ending
         } else {
@@ -26,6 +29,7 @@ class LineByLine {
         this.options = options;
 
         this.newLineCharacter = options.newLineCharacter;
+        this.crCharacter = 0x0d;
 
         this.reset();
     }
@@ -149,6 +153,10 @@ class LineByLine {
         }
 
         if (line && line[line.length-1] === this.newLineCharacter) {
+            line = line.slice(0, line.length-1);
+        }
+
+        if (this.options.lineTrimCR === true && line && line[line.length-1] === this.crCharacter) {
             line = line.slice(0, line.length-1);
         }
 

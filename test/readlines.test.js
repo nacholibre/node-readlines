@@ -88,7 +88,6 @@ test('should reset and start from the beggining', (t) => {
 
 test('should read big lines', (t) => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/bigLines.json'));
-    
 
     t.ok(JSON.parse(liner.next()), 'line 0: valid JSON');
     t.ok(JSON.parse(liner.next()), 'line 1: valid JSON');
@@ -126,6 +125,30 @@ test('should correctly processes NULL character in lines', (t) => {
     t.equals(liner.next().toString(), 'line without null', 'line 0: line without null');
     t.equals(liner.next().toString(), 'line wi'+String.fromCharCode(0)+'th null', 'line 1: line with null');
     t.equals(liner.next().toString(), 'another line without null', 'line 2: another line without null');
+
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
+})
+
+test('should NOT trim CR characters at the end of the line', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/linesWithCR.txt'));
+
+    t.equals(liner.next().toString(), 'line1here\r');
+    t.equals(liner.next().toString(), 'line2here\r');
+    t.equals(liner.next().toString(), 'line3here\r');
+
+    t.equals(liner.fd, null, 'fd is null');
+    t.end();
+})
+
+test('should trim CR characters at the end of the line', (t) => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/linesWithCR.txt'), {
+        'lineTrimCR': true
+    });
+
+    t.equals(liner.next().toString(), 'line1here');
+    t.equals(liner.next().toString(), 'line2here');
+    t.equals(liner.next().toString(), 'line3here');
 
     t.equals(liner.fd, null, 'fd is null');
     t.end();
