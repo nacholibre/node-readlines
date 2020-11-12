@@ -89,7 +89,6 @@ test('should reset and start from the beginning', (t) => {
 test('should read big lines', (t) => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/bigLines.json'));
 
-
     t.ok(JSON.parse(liner.next()), 'line 0: valid JSON');
     t.ok(JSON.parse(liner.next()), 'line 1: valid JSON');
     t.ok(JSON.parse(liner.next()), 'line 2: valid JSON');
