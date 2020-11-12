@@ -4,3 +4,4 @@ os:
     - osx
 node_js:
     - "6"
+    - "node" # Latest stable node release.
