@@ -39,7 +39,7 @@ Manually close the open file, subsequent `next()` calls will return false. This 
 ## Example
 ```javascript
 const lineByLine = require('n-readlines');
-const liner = new lineByLine('./test/fixtures/normalFile.txt');
+const liner = new lineByLine('./bigFile.txt');
 
 let line;
 let lineNumber = 0;
