@@ -68,7 +68,7 @@ test('should read empty lines', (t) => {
     t.end();
 });
 
-test('should reset and start from the beggining', (t) => {
+test('should reset and start from the beginning', (t) => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'), {
         readChunk: 16
     });
@@ -88,7 +88,6 @@ test('should reset and start from the beggining', (t) => {
 
 test('should read big lines', (t) => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/bigLines.json'));
-    
 
     t.ok(JSON.parse(liner.next()), 'line 0: valid JSON');
     t.ok(JSON.parse(liner.next()), 'line 1: valid JSON');
