@@ -30,20 +30,6 @@ class LineByLine {
         this.reset();
     }
 
-    _searchInBuffer(buffer, hexNeedle) {
-        let found = -1;
-
-        for (let i = 0; i <= buffer.length; i++) {
-            let b_byte = buffer[i];
-            if (b_byte === hexNeedle) {
-                found = i;
-                break;
-            }
-        }
-
-        return found;
-    }
-
     reset() {
         this.eofReached = false;
         this.linesCache = [];
@@ -56,26 +42,27 @@ class LineByLine {
     }
 
     _extractLines(buffer) {
-        let line;
         const lines = [];
-        let bufferPosition = 0;
+        let startFrom = 0;
 
-        let lastNewLineBufferPosition = 0;
         while (true) {
-            let bufferPositionValue = buffer[bufferPosition++];
+            let newLineIndex = buffer.indexOf(this.newLineCharacter, startFrom);
 
-            if (bufferPositionValue === this.newLineCharacter) {
-                line = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-                lines.push(line);
-                lastNewLineBufferPosition = bufferPosition;
-            } else if (bufferPositionValue === undefined) {
+            // There is no new line found.
+            if (newLineIndex === -1) {
+                // Get the last slice of the bufer and push it.
+                lines.push(buffer.slice(startFrom));
                 break;
             }
-        }
 
-        let leftovers = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-        if (leftovers.length) {
-            lines.push(leftovers);
+            lines.push(buffer.slice(startFrom, newLineIndex+1));
+            startFrom += (newLineIndex-startFrom)+1;
+
+            // End is already reached, there is no more from this buffer to
+            // read, return the lines.
+            if (startFrom >= buffer.length) {
+                return lines;
+            }
         }
 
         return lines;
@@ -87,7 +74,7 @@ class LineByLine {
         let bytesRead;
         const buffers = [];
         do {
-            const readBuffer = new Buffer(this.options.readChunk);
+            const readBuffer = Buffer.alloc(this.options.readChunk);
 
             bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
             totalBytesRead = totalBytesRead + bytesRead;
@@ -95,7 +82,7 @@ class LineByLine {
             this.fdPosition = this.fdPosition + bytesRead;
 
             buffers.push(readBuffer);
-        } while (bytesRead && this._searchInBuffer(buffers[buffers.length-1], this.options.newLineCharacter) === -1);
+        } while (bytesRead && buffers[buffers.length-1].indexOf(this.options.newLineCharacter) === -1);
 
         let bufferData = Buffer.concat(buffers);
 
