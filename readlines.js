@@ -116,7 +116,7 @@ class LineByLine {
     }
 
     next() {
-        if (!this.fd) return false;
+        if (this.fd == null) return false;
 
         let line = false;
 
