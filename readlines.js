@@ -47,6 +47,7 @@ class LineByLine {
     reset() {
         this.eofReached = false;
         this.linesCache = [];
+        this.seekable = true;
         this.fdPosition = 0;
     }
 
@@ -87,9 +88,18 @@ class LineByLine {
         let bytesRead;
         const buffers = [];
         do {
-            const readBuffer = new Buffer(this.options.readChunk);
+            const readBuffer = Buffer.alloc(this.options.readChunk);
 
-            bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
+            if (this.seekable) {
+                try {
+                    bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
+                } catch {
+                    this.seekable = false;
+                }
+            }
+            if (!this.seekable) {
+                bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk);
+            }
             totalBytesRead = totalBytesRead + bytesRead;
 
             this.fdPosition = this.fdPosition + bytesRead;
@@ -100,9 +110,10 @@ class LineByLine {
         let bufferData = Buffer.concat(buffers);
 
         if (bytesRead < this.options.readChunk) {
-            this.eofReached = true;
             bufferData = bufferData.slice(0, totalBytesRead);
         }
+
+        this.eofReached = bytesRead === 0;
 
         if (totalBytesRead) {
             this.linesCache = this._extractLines(bufferData);
@@ -116,7 +127,7 @@ class LineByLine {
     }
 
     next() {
-        if (!this.fd) return false;
+        if (this.fd === null) return false;
 
         let line = false;
 
