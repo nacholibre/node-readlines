@@ -93,7 +93,7 @@ class LineByLine {
             if (this.seekable) {
                 try {
                     bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
-                } catch {
+                } catch (e) {
                     this.seekable = false;
                 }
             }
