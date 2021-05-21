@@ -89,7 +89,7 @@ class LineByLine {
         do {
             const readBuffer = new Buffer(this.options.readChunk);
 
-            bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
+            bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fd === process.stdin.fd ? undefined : this.fdPosition);
             totalBytesRead = totalBytesRead + bytesRead;
 
             this.fdPosition = this.fdPosition + bytesRead;
@@ -116,7 +116,7 @@ class LineByLine {
     }
 
     next() {
-        if (!this.fd) return false;
+        if (typeof this.fd !== 'number' && !this.fd) return false;
 
         let line = false;
 
