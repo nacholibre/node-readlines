@@ -132,6 +132,7 @@ class LineByLine {
         let line = false;
 
         if (this.eofReached && this.linesCache.length === 0) {
+            this.close();
             return line;
         }
 
