@@ -45,3 +45,19 @@ jobs:
 
       - name: Run tests
         run: bun test test/readlines.test.js
+
+  test-deno:
+    name: Deno
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run tests
+        run: deno test --allow-read --allow-env --allow-run --no-check --unstable-detect-cjs test/readlines.test.js

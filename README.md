@@ -6,6 +6,7 @@
 [![license](https://img.shields.io/npm/l/n-readlines.svg)](https://github.com/nacholibre/node-readlines/blob/master/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue.svg)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-compatible-f9f1e1.svg)](https://bun.sh/)
+[![Deno](https://img.shields.io/badge/Deno-compatible-000000.svg)](https://deno.land/)
 
 > 📖 Read files line-by-line, synchronously. Zero dependencies.
 
@@ -22,6 +23,7 @@ Reading a file line by line may seem trivial, but in Node.js there's no straight
 - 🪟 **Cross-platform** — handles LF, CRLF, and CR line endings automatically
 - 📥 **Stdin support** — read from stdin by passing fd 0
 - 🥟 **Bun compatible** — works with Bun runtime
+- 🦕 **Deno compatible** — works with Deno runtime
 
 ## 📦 Installation
 
@@ -29,7 +31,7 @@ Reading a file line by line may seem trivial, but in Node.js there's no straight
 npm install n-readlines
 ```
 
-**Requirements:** Node.js >= 18.x or Bun
+**Requirements:** Node.js >= 18.x, Bun, or Deno
 
 ## 🚀 Quick Start
 
