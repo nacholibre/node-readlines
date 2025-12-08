@@ -4,6 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/n-readlines.svg)](https://www.npmjs.com/package/n-readlines)
 [![npm downloads](https://img.shields.io/npm/dm/n-readlines.svg)](https://www.npmjs.com/package/n-readlines)
 [![license](https://img.shields.io/npm/l/n-readlines.svg)](https://github.com/nacholibre/node-readlines/blob/master/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue.svg)](https://www.typescriptlang.org/)
 
 > 📖 Read files line-by-line, synchronously. Zero dependencies.
 
@@ -16,6 +17,7 @@ Reading a file line by line may seem trivial, but in Node.js there's no straight
 - 🔄 **Synchronous** — no callbacks or promises to manage
 - 💾 **Memory efficient** — reads in chunks, doesn't load entire file
 - 🔧 **Configurable** — custom chunk sizes and line endings
+- 📘 **TypeScript support** — includes type definitions
 
 ## 📦 Installation
 
@@ -32,6 +34,18 @@ const LineByLine = require('n-readlines');
 const liner = new LineByLine('./textfile.txt');
 
 let line;
+while (line = liner.next()) {
+    console.log(line.toString());
+}
+```
+
+### TypeScript
+
+```typescript
+import LineByLine = require('n-readlines');
+const liner = new LineByLine('./textfile.txt');
+
+let line: Buffer | null;
 while (line = liner.next()) {
     console.log(line.toString());
 }
@@ -55,13 +69,13 @@ new LineByLine(fd, [options])
 
 ### Methods
 
-#### `.next()` → `Buffer | false`
+#### `.next()` → `Buffer | null`
 
-Returns the next line as a `Buffer` (without the newline character), or `false` when end of file is reached.
+Returns the next line as a `Buffer` (without the newline character), or `null` when end of file is reached.
 
 ```javascript
 const line = liner.next();
-if (line) {
+if (line !== null) {
     console.log(line.toString()); // Convert Buffer to string
 }
 ```
@@ -79,12 +93,12 @@ liner.next(); // First line again
 
 #### `.close()`
 
-Manually closes the file. Subsequent `next()` calls will return `false`.
+Manually closes the file. Subsequent `next()` calls will return `null`.
 
 ```javascript
 liner.next();
 liner.close(); // Done reading early
-liner.next(); // Returns false
+liner.next(); // Returns null
 ```
 
 ## 📚 Examples
@@ -158,6 +172,7 @@ while (line = liner.next()) {
 - The newline character is **not** included in the returned line
 - Files without a trailing newline are handled correctly
 - Empty lines are preserved and returned as empty buffers
+- Returns `null` (not `false`) when end of file is reached
 
 ## 📄 License
 

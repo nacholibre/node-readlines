@@ -116,9 +116,9 @@ class LineByLine {
     }
 
     next() {
-        if (!this.fd) return false;
+        if (!this.fd) return null;
 
-        let line = false;
+        let line = null;
 
         if (this.eofReached && this.linesCache.length === 0) {
             return line;
