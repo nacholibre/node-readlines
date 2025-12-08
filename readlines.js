@@ -87,7 +87,7 @@ class LineByLine {
         let bytesRead;
         const buffers = [];
         do {
-            const readBuffer = new Buffer(this.options.readChunk);
+            const readBuffer = Buffer.alloc(this.options.readChunk);
 
             bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
             totalBytesRead = totalBytesRead + bytesRead;
