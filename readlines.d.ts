@@ -5,9 +5,15 @@ declare class LineByLine {
   fd: number | null;
 
   /**
+   * Whether reading from stdin (fd 0).
+   */
+  readonly isStdin: boolean;
+
+  /**
    * Creates a new line-by-line file reader.
    * Automatically handles LF (\n), CRLF (\r\n), and CR (\r) line endings.
-   * @param file - Path to file or file descriptor
+   * Supports reading from stdin (fd 0).
+   * @param file - Path to file, file descriptor, or 0 for stdin
    * @param options - Configuration options
    */
   constructor(
@@ -26,11 +32,13 @@ declare class LineByLine {
 
   /**
    * Resets the reader to the beginning of the file.
+   * Note: reset() does not work with stdin.
    */
   reset(): void;
 
   /**
    * Manually closes the file. Subsequent `next()` calls will return `null`.
+   * Note: Does not close stdin when reading from fd 0.
    */
   close(): void;
 }

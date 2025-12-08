@@ -19,6 +19,7 @@ Reading a file line by line may seem trivial, but in Node.js there's no straight
 - 🔧 **Configurable** — custom chunk sizes
 - 📘 **TypeScript support** — includes type definitions
 - 🪟 **Cross-platform** — handles LF, CRLF, and CR line endings automatically
+- 📥 **Stdin support** — read from stdin by passing fd 0
 
 ## 📦 Installation
 
@@ -64,7 +65,7 @@ new LineByLine(fd, [options])
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `filename` | `string` | Path to the file to read |
-| `fd` | `number` | File descriptor (alternative to filename) |
+| `fd` | `number` | File descriptor (0 for stdin, or from `fs.openSync`) |
 | `options.readChunk` | `number` | Bytes to read at once. Default: `1024` |
 
 ### Methods
@@ -91,6 +92,8 @@ liner.reset(); // Go back to start
 liner.next(); // First line again
 ```
 
+> **Note:** `reset()` does not work with stdin.
+
 #### `.close()`
 
 Manually closes the file. Subsequent `next()` calls will return `null`.
@@ -100,6 +103,8 @@ liner.next();
 liner.close(); // Done reading early
 liner.next(); // Returns null
 ```
+
+> **Note:** When reading from stdin, `close()` does not close the stdin stream.
 
 ## 📚 Examples
 
@@ -118,6 +123,24 @@ while (line = liner.next()) {
 }
 
 console.log('Finished reading file');
+```
+
+### Reading from stdin
+
+```javascript
+const LineByLine = require('n-readlines');
+const liner = new LineByLine(0); // fd 0 = stdin
+
+let line;
+while (line = liner.next()) {
+    console.log(line.toString());
+}
+```
+
+Usage:
+```bash
+echo -e "line1\nline2\nline3" | node script.js
+cat file.txt | node script.js
 ```
 
 ### Reading with custom chunk size

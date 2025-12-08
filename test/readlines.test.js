@@ -213,3 +213,103 @@ test('Mixed: lines should be clean without any line ending characters', () => {
         assert.ok(!str.includes('\n'), `Line should not contain \\n: "${str}"`);
     }
 });
+
+// ============================================
+// FILE DESCRIPTOR TESTS
+// ============================================
+
+const fs = require('fs');
+
+test('should read from file descriptor instead of filename', () => {
+    const fd = fs.openSync(path.resolve(__dirname, 'fixtures/normalFile.txt'), 'r');
+    const liner = new lineByLine(fd);
+
+    assert.strictEqual(liner.next().toString(), 'google.com', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'yahoo.com', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'yandex.ru', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+    // Note: liner.close() was called internally, fd is now closed
+});
+
+test('should read CRLF file from file descriptor', () => {
+    const fd = fs.openSync(path.resolve(__dirname, 'fixtures/crlfFile.txt'), 'r');
+    const liner = new lineByLine(fd);
+
+    assert.strictEqual(liner.next().toString(), 'line1', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'line2', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'line3', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+// ============================================
+// STDIN TESTS
+// ============================================
+
+test('stdin (fd 0) should be supported', () => {
+    const { spawnSync } = require('child_process');
+    
+    const result = spawnSync('node', ['-e', `
+        const LineByLine = require('./readlines.js');
+        const liner = new LineByLine(0); // fd 0 = stdin
+        const lines = [];
+        let line;
+        while (line = liner.next()) {
+            lines.push(line.toString());
+        }
+        console.log(JSON.stringify(lines));
+    `], {
+        cwd: path.resolve(__dirname, '..'),
+        input: 'line1\nline2\nline3\n',
+        encoding: 'utf8'
+    });
+    
+    assert.strictEqual(result.status, 0, 'Process should exit successfully');
+    const lines = JSON.parse(result.stdout.trim());
+    assert.deepStrictEqual(lines, ['line1', 'line2', 'line3'], 'Should read all 3 lines from stdin');
+});
+
+test('stdin with CRLF line endings should work', () => {
+    const { spawnSync } = require('child_process');
+    
+    const result = spawnSync('node', ['-e', `
+        const LineByLine = require('./readlines.js');
+        const liner = new LineByLine(0);
+        const lines = [];
+        let line;
+        while (line = liner.next()) {
+            lines.push(line.toString());
+        }
+        console.log(JSON.stringify(lines));
+    `], {
+        cwd: path.resolve(__dirname, '..'),
+        input: 'win1\r\nwin2\r\nwin3\r\n',
+        encoding: 'utf8'
+    });
+    
+    assert.strictEqual(result.status, 0, 'Process should exit successfully');
+    const lines = JSON.parse(result.stdout.trim());
+    assert.deepStrictEqual(lines, ['win1', 'win2', 'win3'], 'Should read CRLF lines from stdin');
+});
+
+test('stdin without trailing newline should work', () => {
+    const { spawnSync } = require('child_process');
+    
+    const result = spawnSync('node', ['-e', `
+        const LineByLine = require('./readlines.js');
+        const liner = new LineByLine(0);
+        const lines = [];
+        let line;
+        while (line = liner.next()) {
+            lines.push(line.toString());
+        }
+        console.log(JSON.stringify(lines));
+    `], {
+        cwd: path.resolve(__dirname, '..'),
+        input: 'first\nsecond\nthird',  // No trailing newline
+        encoding: 'utf8'
+    });
+    
+    assert.strictEqual(result.status, 0, 'Process should exit successfully');
+    const lines = JSON.parse(result.stdout.trim());
+    assert.deepStrictEqual(lines, ['first', 'second', 'third'], 'Should read all lines even without trailing newline');
+});
