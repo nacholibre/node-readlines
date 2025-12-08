@@ -7,7 +7,8 @@ on:
     branches: [master, main]
 
 jobs:
-  test:
+  test-node:
+    name: Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,3 +30,18 @@ jobs:
       - name: Run tests
         run: npm test
 
+  test-bun:
+    name: Bun
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run tests
+        run: bun test test/readlines.test.js
