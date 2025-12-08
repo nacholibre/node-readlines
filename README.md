@@ -1,53 +1,164 @@
-[![Build Status](https://travis-ci.org/nacholibre/node-readlines.svg)](https://travis-ci.org/nacholibre/node-readlines)
-# node-readlines
-Reading file line by line may seem like a trivial problem, but in node, there is no straightforward way to do it. There are a lot of libraries using Transform Streams to achieve it, but it seems like a overkill, so I've wrote simple version using only the `filesystem` module of node. Note that this is *synchronous* library.
+# n-readlines
 
-Install with
-`npm install n-readlines`
+[![Tests](https://github.com/nacholibre/node-readlines/actions/workflows/test.yml/badge.svg)](https://github.com/nacholibre/node-readlines/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/n-readlines.svg)](https://www.npmjs.com/package/n-readlines)
+[![npm downloads](https://img.shields.io/npm/dm/n-readlines.svg)](https://www.npmjs.com/package/n-readlines)
+[![license](https://img.shields.io/npm/l/n-readlines.svg)](https://github.com/nacholibre/node-readlines/blob/master/LICENSE)
 
----------------------------------------
+> 📖 Read files line-by-line, synchronously. Zero dependencies.
 
-## Documentation
-### new readlines(filename, [options]);
-### new readlines(fd, [options]);
+Reading a file line by line may seem trivial, but in Node.js there's no straightforward way to do it. Many libraries use Transform Streams which feels like overkill for such a simple task. This library uses only Node's built-in `fs` module to provide a clean, synchronous API.
 
-**Arguments**
+## ✨ Features
 
-* `filename` - String path to the file you want to read from
-* `fd` - File descriptor
-* `options` - Object
-  * `readChunk` - Integer number of bytes to read at once. Default: 1024
-  * `newLineCharacter` - String new line character, only works with one byte characters for now. Default: `\n` which is `0x0a` hex encoded
+- 🚀 **Simple API** — just `next()` to get the next line
+- 📦 **Zero dependencies** — only uses Node.js built-ins
+- 🔄 **Synchronous** — no callbacks or promises to manage
+- 💾 **Memory efficient** — reads in chunks, doesn't load entire file
+- 🔧 **Configurable** — custom chunk sizes and line endings
 
-`node-readlines` can handle files without newLineCharacter after the last line
+## 📦 Installation
 
----------------------------------------
+```bash
+npm install n-readlines
+```
 
-### readlines.next()
-Returns `buffer` with the line data without the `newLineCharacter` or `false` if end of file is reached.
+**Requirements:** Node.js >= 18.x
 
----------------------------------------
-### readlines.reset()
-Resets the pointer and starts from the beginning of the file. This works only if the end is not reached.
+## 🚀 Quick Start
 
----------------------------------------
-### readlines.close()
-Manually close the open file, subsequent `next()` calls will return false. This works only if the end is not reached.
-
----------------------------------------
-
-## Example
 ```javascript
-const lineByLine = require('n-readlines');
-const liner = new lineByLine('./test/fixtures/normalFile.txt');
+const LineByLine = require('n-readlines');
+const liner = new LineByLine('./textfile.txt');
 
 let line;
-let lineNumber = 0;
+while (line = liner.next()) {
+    console.log(line.toString());
+}
+```
+
+## 📖 API Reference
+
+### Constructor
+
+```javascript
+new LineByLine(filename, [options])
+new LineByLine(fd, [options])
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `filename` | `string` | Path to the file to read |
+| `fd` | `number` | File descriptor (alternative to filename) |
+| `options.readChunk` | `number` | Bytes to read at once. Default: `1024` |
+| `options.newLineCharacter` | `string` | Line ending character. Default: `\n` |
+
+### Methods
+
+#### `.next()` → `Buffer | false`
+
+Returns the next line as a `Buffer` (without the newline character), or `false` when end of file is reached.
+
+```javascript
+const line = liner.next();
+if (line) {
+    console.log(line.toString()); // Convert Buffer to string
+}
+```
+
+#### `.reset()`
+
+Resets the reader to the beginning of the file.
+
+```javascript
+liner.next(); // Read first line
+liner.next(); // Read second line
+liner.reset(); // Go back to start
+liner.next(); // First line again
+```
+
+#### `.close()`
+
+Manually closes the file. Subsequent `next()` calls will return `false`.
+
+```javascript
+liner.next();
+liner.close(); // Done reading early
+liner.next(); // Returns false
+```
+
+## 📚 Examples
+
+### Basic line reading
+
+```javascript
+const LineByLine = require('n-readlines');
+const liner = new LineByLine('./data.txt');
+
+let line;
+let lineNumber = 1;
 
 while (line = liner.next()) {
-    console.log('Line ' + lineNumber + ': ' + line.toString('ascii'));
+    console.log(`Line ${lineNumber}: ${line.toString('utf8')}`);
     lineNumber++;
 }
 
-console.log('end of line reached');
+console.log('Finished reading file');
 ```
+
+### Reading with custom chunk size
+
+```javascript
+const liner = new LineByLine('./large-file.txt', {
+    readChunk: 4096 // Read 4KB at a time
+});
+```
+
+### Processing JSON lines (JSONL/NDJSON)
+
+```javascript
+const LineByLine = require('n-readlines');
+const liner = new LineByLine('./data.jsonl');
+
+let line;
+while (line = liner.next()) {
+    const record = JSON.parse(line.toString());
+    console.log(record);
+}
+```
+
+### Reading Windows-style line endings
+
+```javascript
+const liner = new LineByLine('./windows-file.txt', {
+    newLineCharacter: '\r\n'
+});
+```
+
+### Early termination
+
+```javascript
+const liner = new LineByLine('./log.txt');
+
+let line;
+while (line = liner.next()) {
+    const text = line.toString();
+    
+    if (text.includes('ERROR')) {
+        console.log('Found error:', text);
+        liner.close(); // Stop reading
+        break;
+    }
+}
+```
+
+## 📝 Notes
+
+- Lines are returned as `Buffer` objects — call `.toString()` to convert to string
+- The newline character is **not** included in the returned line
+- Files without a trailing newline are handled correctly
+- Empty lines are preserved and returned as empty buffers
+
+## 📄 License
+
+MIT © [Yoan Arnaudov](https://github.com/nacholibre)
