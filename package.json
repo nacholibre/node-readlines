@@ -1,6 +1,6 @@
 {
   "name": "n-readlines",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Read file line by line without buffering the whole file in memory.",
   "main": "./readlines.js",
   "dependencies": {},
@@ -21,13 +21,11 @@
     "readlines"
   ],
   "engines": {
-    "node": ">=6.x.x"
+    "node": ">=18.x.x"
   },
-  "devDependencies": {
-    "tape": "^4.9.0"
-  },
+  "devDependencies": {},
   "scripts": {
-    "test": "tape test/*.test.js"
+    "test": "node --test test/*.test.js"
   },
   "author": "Yoan Arnaudov <jonidev@gmail.com>",
   "license": "MIT"

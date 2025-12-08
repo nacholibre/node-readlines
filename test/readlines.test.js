@@ -1,132 +1,121 @@
 'use strict';
 
+const { test } = require('node:test');
+const assert = require('node:assert');
 const lineByLine = require('../readlines.js');
 const path = require('path');
-const test = require('tape');
 
-test('should get all lines', (t) => {
+test('should get all lines', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/twoLineFile.txt'));
 
-    t.equals(liner.next().toString('ascii'), 'hello', 'line 0: hello');
-    t.equals(liner.next().toString('ascii'), 'hello2', 'line 1: hello2');
-    t.equals(liner.next(), false, 'line 3: false');
-    t.equals(liner.next(), false, 'line 4: false');
-    t.equals(liner.fd, null, 'fd null');
-    t.end();
+    assert.strictEqual(liner.next().toString('ascii'), 'hello', 'line 0: hello');
+    assert.strictEqual(liner.next().toString('ascii'), 'hello2', 'line 1: hello2');
+    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.next(), false, 'line 4: false');
+    assert.strictEqual(liner.fd, null, 'fd null');
 });
 
-test('should get all lines even if the file doesnt end with new line', (t) => {
+test('should get all lines even if the file doesnt end with new line', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/badEndFile.txt'));
 
-    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
-    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
-    t.equals(liner.next(), false, 'line 3: false');
-    t.equals(liner.fd, null, 'fd is null');
-    t.end();
+    assert.strictEqual(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    assert.strictEqual(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
+    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
-test('should get all lines if there is no new lines', (t) => {
+test('should get all lines if there is no new lines', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/noNewLinesFile.txt'));
 
-    t.equals(liner.next().toString('ascii'), 'no new line', 'line 0: no new line');
-    t.equals(liner.next(), false, 'line 1: false');
-    t.equals(liner.fd, null, 'fd is null');
-    t.end();
+    assert.strictEqual(liner.next().toString('ascii'), 'no new line', 'line 0: no new line');
+    assert.strictEqual(liner.next(), false, 'line 1: false');
+    assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
-test('should handle empty files', (t) => {
+test('should handle empty files', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/emptyFile.txt'));
 
-    t.equals(liner.next(), false, 'line 0: false');
-    t.equals(liner.fd, null, 'line 0: false');
-    t.end();
+    assert.strictEqual(liner.next(), false, 'line 0: false');
+    assert.strictEqual(liner.fd, null, 'line 0: false');
 });
 
-test('should read right between two chunks', (t) => {
+test('should read right between two chunks', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'), {
         readChunk: 16
     });
 
-    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
-    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
-    t.equals(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
-    t.equals(liner.next(), false, 'line 3: false');
-    t.equals(liner.fd, null, 'fs is null');
-    t.end();
+    assert.strictEqual(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    assert.strictEqual(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
+    assert.strictEqual(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
+    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.fd, null, 'fs is null');
 });
 
-test('should read empty lines', (t) => {
+test('should read empty lines', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/withEmptyLines.txt'));
 
-    t.equals(liner.next().toString('ascii'), 'hello', 'line 0: hello');
-    t.equals(liner.next().toString('ascii'), 'hello4', 'line 1: hello4');
-    t.equals(liner.next().toString('ascii'), '', 'line 2: ');
-    t.equals(liner.next().toString('ascii'), 'hello2', 'line 3: hello2');
-    t.equals(liner.next().toString('ascii'), 'hello3', 'line 4: hello3');
-    t.equals(liner.next(), false, 'line 5: false');
-    t.equals(liner.fd, null, 'fs is null');
-    t.end();
+    assert.strictEqual(liner.next().toString('ascii'), 'hello', 'line 0: hello');
+    assert.strictEqual(liner.next().toString('ascii'), 'hello4', 'line 1: hello4');
+    assert.strictEqual(liner.next().toString('ascii'), '', 'line 2: ');
+    assert.strictEqual(liner.next().toString('ascii'), 'hello2', 'line 3: hello2');
+    assert.strictEqual(liner.next().toString('ascii'), 'hello3', 'line 4: hello3');
+    assert.strictEqual(liner.next(), false, 'line 5: false');
+    assert.strictEqual(liner.fd, null, 'fs is null');
 });
 
-test('should reset and start from the beggining', (t) => {
+test('should reset and start from the beggining', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'), {
         readChunk: 16
     });
 
-    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
-    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
+    assert.strictEqual(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    assert.strictEqual(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
 
     liner.reset()
 
-    t.equals(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
-    t.equals(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
-    t.equals(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
-    t.equals(liner.next(), false, 'line 3: false');
-    t.equals(liner.fd, null, 'fd is null');
-    t.end();
+    assert.strictEqual(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
+    assert.strictEqual(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
+    assert.strictEqual(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
+    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
-test('should read big lines', (t) => {
+test('should read big lines', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/bigLines.json'));
-    
 
-    t.ok(JSON.parse(liner.next()), 'line 0: valid JSON');
-    t.ok(JSON.parse(liner.next()), 'line 1: valid JSON');
-    t.ok(JSON.parse(liner.next()), 'line 2: valid JSON');
+    assert.ok(JSON.parse(liner.next()), 'line 0: valid JSON');
+    assert.ok(JSON.parse(liner.next()), 'line 1: valid JSON');
+    assert.ok(JSON.parse(liner.next()), 'line 2: valid JSON');
 
-    t.equals(liner.next(), false, 'line 3: false');
-    t.equals(liner.fd, null, 'fd is null');
-    t.end();
+    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
-test('Non-Latin Char JSON', (t) => {
+test('Non-Latin Char JSON', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/eiffel.geojson'));
 
-    t.ok(JSON.parse(liner.next().toString()), 'line 0: valid JSON');
+    assert.ok(JSON.parse(liner.next().toString()), 'line 0: valid JSON');
 
-    t.equals(liner.fd, null, 'fd is null');
-    t.end();
+    assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
-test('Manually Close', (t) => {
+test('Manually Close', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'));
 
-    t.equals(liner.next().toString(), 'google.com', 'line 0: google.com');
+    assert.strictEqual(liner.next().toString(), 'google.com', 'line 0: google.com');
 
     liner.close();
-    t.equals(liner.fd, null, 'fd is null');
+    assert.strictEqual(liner.fd, null, 'fd is null');
 
-    t.equals(liner.next(), false, 'line after close: false');
-    t.end();
+    assert.strictEqual(liner.next(), false, 'line after close: false');
 });
 
-test('should correctly processes NULL character in lines', (t) => {
+test('should correctly processes NULL character in lines', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/withNULL.txt'));
 
-    t.equals(liner.next().toString(), 'line without null', 'line 0: line without null');
-    t.equals(liner.next().toString(), 'line wi'+String.fromCharCode(0)+'th null', 'line 1: line with null');
-    t.equals(liner.next().toString(), 'another line without null', 'line 2: another line without null');
+    assert.strictEqual(liner.next().toString(), 'line without null', 'line 0: line without null');
+    assert.strictEqual(liner.next().toString(), 'line wi'+String.fromCharCode(0)+'th null', 'line 1: line with null');
+    assert.strictEqual(liner.next().toString(), 'another line without null', 'line 2: another line without null');
 
-    t.equals(liner.fd, null, 'fd is null');
-    t.end();
-})
+    assert.strictEqual(liner.fd, null, 'fd is null');
+});
