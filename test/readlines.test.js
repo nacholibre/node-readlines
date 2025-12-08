@@ -10,8 +10,8 @@ test('should get all lines', () => {
 
     assert.strictEqual(liner.next().toString('ascii'), 'hello', 'line 0: hello');
     assert.strictEqual(liner.next().toString('ascii'), 'hello2', 'line 1: hello2');
-    assert.strictEqual(liner.next(), false, 'line 3: false');
-    assert.strictEqual(liner.next(), false, 'line 4: false');
+    assert.strictEqual(liner.next(), null, 'line 3: false');
+    assert.strictEqual(liner.next(), null, 'line 4: false');
     assert.strictEqual(liner.fd, null, 'fd null');
 });
 
@@ -20,7 +20,7 @@ test('should get all lines even if the file doesnt end with new line', () => {
 
     assert.strictEqual(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
     assert.strictEqual(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
-    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.next(), null, 'line 3: false');
     assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
@@ -28,14 +28,14 @@ test('should get all lines if there is no new lines', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/noNewLinesFile.txt'));
 
     assert.strictEqual(liner.next().toString('ascii'), 'no new line', 'line 0: no new line');
-    assert.strictEqual(liner.next(), false, 'line 1: false');
+    assert.strictEqual(liner.next(), null, 'line 1: false');
     assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
 test('should handle empty files', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/emptyFile.txt'));
 
-    assert.strictEqual(liner.next(), false, 'line 0: false');
+    assert.strictEqual(liner.next(), null, 'line 0: false');
     assert.strictEqual(liner.fd, null, 'line 0: false');
 });
 
@@ -47,7 +47,7 @@ test('should read right between two chunks', () => {
     assert.strictEqual(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
     assert.strictEqual(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
     assert.strictEqual(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
-    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.next(), null, 'line 3: false');
     assert.strictEqual(liner.fd, null, 'fs is null');
 });
 
@@ -59,7 +59,7 @@ test('should read empty lines', () => {
     assert.strictEqual(liner.next().toString('ascii'), '', 'line 2: ');
     assert.strictEqual(liner.next().toString('ascii'), 'hello2', 'line 3: hello2');
     assert.strictEqual(liner.next().toString('ascii'), 'hello3', 'line 4: hello3');
-    assert.strictEqual(liner.next(), false, 'line 5: false');
+    assert.strictEqual(liner.next(), null, 'line 5: false');
     assert.strictEqual(liner.fd, null, 'fs is null');
 });
 
@@ -76,7 +76,7 @@ test('should reset and start from the beggining', () => {
     assert.strictEqual(liner.next().toString('ascii'), 'google.com', 'line 0: google.com');
     assert.strictEqual(liner.next().toString('ascii'), 'yahoo.com', 'line 1: yahoo.com');
     assert.strictEqual(liner.next().toString('ascii'), 'yandex.ru', 'line 2: yandex.ru');
-    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.next(), null, 'line 3: false');
     assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
@@ -87,7 +87,7 @@ test('should read big lines', () => {
     assert.ok(JSON.parse(liner.next()), 'line 1: valid JSON');
     assert.ok(JSON.parse(liner.next()), 'line 2: valid JSON');
 
-    assert.strictEqual(liner.next(), false, 'line 3: false');
+    assert.strictEqual(liner.next(), null, 'line 3: false');
     assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
@@ -107,7 +107,7 @@ test('Manually Close', () => {
     liner.close();
     assert.strictEqual(liner.fd, null, 'fd is null');
 
-    assert.strictEqual(liner.next(), false, 'line after close: false');
+    assert.strictEqual(liner.next(), null, 'line after close: false');
 });
 
 test('should correctly processes NULL character in lines', () => {
