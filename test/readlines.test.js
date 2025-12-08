@@ -119,3 +119,97 @@ test('should correctly processes NULL character in lines', () => {
 
     assert.strictEqual(liner.fd, null, 'fd is null');
 });
+
+// ============================================
+// LINE ENDING TESTS (LF, CRLF, CR)
+// ============================================
+
+test('LF: should read Unix/Linux line endings (\\n)', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'));
+
+    assert.strictEqual(liner.next().toString(), 'google.com', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'yahoo.com', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'yandex.ru', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+test('LF: should handle small chunks with Unix line endings', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'), {
+        readChunk: 5  // Very small chunk to test boundary conditions
+    });
+
+    assert.strictEqual(liner.next().toString(), 'google.com', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'yahoo.com', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'yandex.ru', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+test('CRLF: should read Windows line endings (\\r\\n)', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/crlfFile.txt'));
+
+    assert.strictEqual(liner.next().toString(), 'line1', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'line2', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'line3', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+test('CRLF: should handle Windows file without trailing newline', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/crlfNoEndingNewline.txt'));
+
+    assert.strictEqual(liner.next().toString(), 'windows1', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'windows2', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'windows3', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+test('CRLF: should handle small chunks with Windows line endings', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/crlfFile.txt'), {
+        readChunk: 5  // Very small chunk to test CRLF boundary conditions
+    });
+
+    assert.strictEqual(liner.next().toString(), 'line1', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'line2', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'line3', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+test('CRLF: lines should not contain \\r character', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/crlfFile.txt'));
+
+    let line;
+    while (line = liner.next()) {
+        const str = line.toString();
+        assert.ok(!str.includes('\r'), `Line should not contain \\r: "${str}"`);
+        assert.ok(!str.includes('\n'), `Line should not contain \\n: "${str}"`);
+    }
+});
+
+test('CR: should read classic Mac line endings (\\r only)', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/crOnlyFile.txt'));
+
+    assert.strictEqual(liner.next().toString(), 'cr1', 'line 0');
+    assert.strictEqual(liner.next().toString(), 'cr2', 'line 1');
+    assert.strictEqual(liner.next().toString(), 'cr3', 'line 2');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+test('Mixed: should handle mixed line endings (LF and CRLF)', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/mixedLineEndings.txt'));
+
+    assert.strictEqual(liner.next().toString(), 'mixed1', 'line 0 (LF)');
+    assert.strictEqual(liner.next().toString(), 'line2', 'line 1 (CRLF)');
+    assert.strictEqual(liner.next().toString(), 'line3', 'line 2 (CRLF)');
+    assert.strictEqual(liner.next().toString(), 'line4', 'line 3 (LF)');
+    assert.strictEqual(liner.next(), null, 'EOF');
+});
+
+test('Mixed: lines should be clean without any line ending characters', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/mixedLineEndings.txt'));
+
+    let line;
+    while (line = liner.next()) {
+        const str = line.toString();
+        assert.ok(!str.includes('\r'), `Line should not contain \\r: "${str}"`);
+        assert.ok(!str.includes('\n'), `Line should not contain \\n: "${str}"`);
+    }
+});

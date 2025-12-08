@@ -16,8 +16,9 @@ Reading a file line by line may seem trivial, but in Node.js there's no straight
 - 📦 **Zero dependencies** — only uses Node.js built-ins
 - 🔄 **Synchronous** — no callbacks or promises to manage
 - 💾 **Memory efficient** — reads in chunks, doesn't load entire file
-- 🔧 **Configurable** — custom chunk sizes and line endings
+- 🔧 **Configurable** — custom chunk sizes
 - 📘 **TypeScript support** — includes type definitions
+- 🪟 **Cross-platform** — handles LF, CRLF, and CR line endings automatically
 
 ## 📦 Installation
 
@@ -65,7 +66,6 @@ new LineByLine(fd, [options])
 | `filename` | `string` | Path to the file to read |
 | `fd` | `number` | File descriptor (alternative to filename) |
 | `options.readChunk` | `number` | Bytes to read at once. Default: `1024` |
-| `options.newLineCharacter` | `string` | Line ending character. Default: `\n` |
 
 ### Methods
 
@@ -141,14 +141,6 @@ while (line = liner.next()) {
 }
 ```
 
-### Reading Windows-style line endings
-
-```javascript
-const liner = new LineByLine('./windows-file.txt', {
-    newLineCharacter: '\r\n'
-});
-```
-
 ### Early termination
 
 ```javascript
@@ -173,6 +165,18 @@ while (line = liner.next()) {
 - Files without a trailing newline are handled correctly
 - Empty lines are preserved and returned as empty buffers
 - Returns `null` (not `false`) when end of file is reached
+
+### Line Ending Support
+
+The library automatically handles all common line ending formats:
+
+| Format | Characters | Platform |
+|--------|------------|----------|
+| **LF** | `\n` | Unix, Linux, macOS |
+| **CRLF** | `\r\n` | Windows |
+| **CR** | `\r` | Classic Mac OS |
+
+Files with mixed line endings are also supported — each line is detected individually.
 
 ## 📄 License
 

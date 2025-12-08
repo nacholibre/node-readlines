@@ -2,6 +2,9 @@
 
 const fs = require('fs');
 
+const LF = 0x0a;  // \n - Unix/Linux/macOS
+const CR = 0x0d;  // \r - Classic Mac OS / part of Windows CRLF
+
 /**
  * @class
  */
@@ -11,12 +14,6 @@ class LineByLine {
 
         if (!options.readChunk) options.readChunk = 1024;
 
-        if (!options.newLineCharacter) {
-            options.newLineCharacter = 0x0a; //linux line ending
-        } else {
-            options.newLineCharacter = options.newLineCharacter.charCodeAt(0);
-        }
-
         if (typeof file === 'number') {
             this.fd = file;
         } else {
@@ -25,29 +22,24 @@ class LineByLine {
 
         this.options = options;
 
-        this.newLineCharacter = options.newLineCharacter;
-
         this.reset();
     }
 
-    _searchInBuffer(buffer, hexNeedle) {
-        let found = -1;
-
-        for (let i = 0; i <= buffer.length; i++) {
-            let b_byte = buffer[i];
-            if (b_byte === hexNeedle) {
-                found = i;
-                break;
+    _searchInBuffer(buffer) {
+        for (let i = 0; i < buffer.length; i++) {
+            const byte = buffer[i];
+            if (byte === LF || byte === CR) {
+                return i;
             }
         }
-
-        return found;
+        return -1;
     }
 
     reset() {
         this.eofReached = false;
         this.linesCache = [];
         this.fdPosition = 0;
+        this.lastChunkEndedWithCR = false;
     }
 
     close() {
@@ -55,31 +47,56 @@ class LineByLine {
         this.fd = null;
     }
 
-    _extractLines(buffer) {
-        let line;
+    _extractLines(buffer, isEof) {
         const lines = [];
-        let bufferPosition = 0;
+        let lineStart = 0;
 
-        let lastNewLineBufferPosition = 0;
-        while (true) {
-            let bufferPositionValue = buffer[bufferPosition++];
+        // If last chunk ended with CR and this one starts with LF, skip the LF
+        if (this.lastChunkEndedWithCR && buffer.length > 0 && buffer[0] === LF) {
+            lineStart = 1;
+        }
+        this.lastChunkEndedWithCR = false;
 
-            if (bufferPositionValue === this.newLineCharacter) {
-                line = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-                lines.push(line);
-                lastNewLineBufferPosition = bufferPosition;
-            } else if (bufferPositionValue === undefined) {
-                break;
+        for (let i = lineStart; i < buffer.length; i++) {
+            const byte = buffer[i];
+
+            if (byte === LF) {
+                // LF found - extract line (without the LF)
+                lines.push(buffer.slice(lineStart, i));
+                lineStart = i + 1;
+            } else if (byte === CR) {
+                const lineEnd = i;
+                
+                // Check if this is the last byte in the buffer
+                if (i + 1 >= buffer.length) {
+                    // CR at end of buffer - might be start of CRLF
+                    if (!isEof) {
+                        // Not at EOF, mark that we ended with CR
+                        this.lastChunkEndedWithCR = true;
+                    }
+                    // Extract line without the CR
+                    lines.push(buffer.slice(lineStart, lineEnd));
+                    lineStart = i + 1;
+                } else if (buffer[i + 1] === LF) {
+                    // CRLF - skip both characters
+                    lines.push(buffer.slice(lineStart, lineEnd));
+                    i++;  // Skip the LF
+                    lineStart = i + 1;
+                } else {
+                    // Standalone CR (classic Mac)
+                    lines.push(buffer.slice(lineStart, lineEnd));
+                    lineStart = i + 1;
+                }
             }
         }
 
-        let leftovers = buffer.slice(lastNewLineBufferPosition, bufferPosition);
-        if (leftovers.length) {
-            lines.push(leftovers);
+        // Add any remaining content (incomplete line without newline)
+        if (lineStart < buffer.length) {
+            lines.push(buffer.slice(lineStart));
         }
 
         return lines;
-    };
+    }
 
     _readChunk(lineLeftovers) {
         let totalBytesRead = 0;
@@ -95,7 +112,7 @@ class LineByLine {
             this.fdPosition = this.fdPosition + bytesRead;
 
             buffers.push(readBuffer);
-        } while (bytesRead && this._searchInBuffer(buffers[buffers.length-1], this.options.newLineCharacter) === -1);
+        } while (bytesRead && this._searchInBuffer(buffers[buffers.length-1]) === -1);
 
         let bufferData = Buffer.concat(buffers);
 
@@ -105,10 +122,14 @@ class LineByLine {
         }
 
         if (totalBytesRead) {
-            this.linesCache = this._extractLines(bufferData);
+            this.linesCache = this._extractLines(bufferData, this.eofReached);
 
             if (lineLeftovers) {
-                this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
+                if (this.linesCache.length > 0) {
+                    this.linesCache[0] = Buffer.concat([lineLeftovers, this.linesCache[0]]);
+                } else {
+                    this.linesCache.push(lineLeftovers);
+                }
             }
         }
 
@@ -133,12 +154,12 @@ class LineByLine {
         if (this.linesCache.length) {
             line = this.linesCache.shift();
 
-            const lastLineCharacter = line[line.length-1];
-
-            if (lastLineCharacter !== this.newLineCharacter) {
+            // Check if this might be an incomplete line (no newline found yet)
+            // This happens when we read a chunk that doesn't contain a newline
+            if (!this.eofReached && this.linesCache.length === 0) {
                 bytesRead = this._readChunk(line);
 
-                if (bytesRead) {
+                if (bytesRead && this.linesCache.length) {
                     line = this.linesCache.shift();
                 }
             }
@@ -146,10 +167,6 @@ class LineByLine {
 
         if (this.eofReached && this.linesCache.length === 0) {
             this.close();
-        }
-
-        if (line && line[line.length-1] === this.newLineCharacter) {
-            line = line.slice(0, line.length-1);
         }
 
         return line;

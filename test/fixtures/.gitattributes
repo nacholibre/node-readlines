@@ -1,0 +1,6 @@
+# Preserve line endings for test fixtures - do not auto-convert
+crlfFile.txt binary
+crlfNoEndingNewline.txt binary
+mixedLineEndings.txt binary
+crOnlyFile.txt binary
+
