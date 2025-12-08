@@ -110,6 +110,41 @@ test('Manually Close', () => {
     assert.strictEqual(liner.next(), null, 'line after close: false');
 });
 
+test('isLast() should return false before reading all lines', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/twoLineFile.txt'));
+
+    assert.strictEqual(liner.isLast(), false, 'isLast should be false before reading');
+    
+    liner.next(); // Read first line
+    assert.strictEqual(liner.isLast(), false, 'isLast should be false after first line');
+    
+    liner.next(); // Read second line
+    assert.strictEqual(liner.isLast(), true, 'isLast should be true after last line');
+    
+    liner.next(); // Try to read past end
+    assert.strictEqual(liner.isLast(), true, 'isLast should still be true');
+});
+
+test('isLast() should return true after manual close', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/normalFile.txt'));
+
+    assert.strictEqual(liner.isLast(), false, 'isLast should be false initially');
+    
+    liner.next(); // Read one line
+    liner.close();
+    
+    assert.strictEqual(liner.isLast(), true, 'isLast should be true after close');
+});
+
+test('isLast() should work with empty file', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/emptyFile.txt'));
+
+    assert.strictEqual(liner.isLast(), false, 'isLast should be false before reading');
+    
+    liner.next(); // Returns null for empty file
+    assert.strictEqual(liner.isLast(), true, 'isLast should be true after reading empty file');
+});
+
 test('should correctly processes NULL character in lines', () => {
     const liner = new lineByLine(path.resolve(__dirname, 'fixtures/withNULL.txt'));
 
