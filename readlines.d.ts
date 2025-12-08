@@ -6,6 +6,7 @@ declare class LineByLine {
 
   /**
    * Creates a new line-by-line file reader.
+   * Automatically handles LF (\n), CRLF (\r\n), and CR (\r) line endings.
    * @param file - Path to file or file descriptor
    * @param options - Configuration options
    */
@@ -14,8 +15,6 @@ declare class LineByLine {
     options?: {
       /** Number of bytes to read at once. Default: 1024 */
       readChunk?: number;
-      /** Line ending character. Default: '\n' */
-      newLineCharacter?: string;
     }
   );
 
@@ -37,4 +36,3 @@ declare class LineByLine {
 }
 
 export = LineByLine;
-
