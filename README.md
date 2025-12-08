@@ -108,6 +108,25 @@ liner.next(); // Returns null
 
 > **Note:** When reading from stdin, `close()` does not close the stdin stream.
 
+#### `.isLast()` → `boolean`
+
+Returns `true` if the last line has been read and there are no more lines available.
+
+```javascript
+const liner = new LineByLine('./file.txt');
+
+while (true) {
+    const line = liner.next();
+    if (line === null) break;
+    
+    console.log(line.toString());
+    
+    if (liner.isLast()) {
+        console.log('This was the last line!');
+    }
+}
+```
+
 ## 📚 Examples
 
 ### Basic line reading

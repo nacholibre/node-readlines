@@ -179,6 +179,14 @@ class LineByLine {
 
         return line;
     }
+
+    /**
+     * Returns true if the last line has been read and there are no more lines.
+     * @returns {boolean}
+     */
+    isLast() {
+        return this.fd === null || (this.eofReached && this.linesCache.length === 0);
+    }
 }
 
 module.exports = LineByLine;

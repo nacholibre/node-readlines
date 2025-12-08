@@ -41,6 +41,11 @@ declare class LineByLine {
    * Note: Does not close stdin when reading from fd 0.
    */
   close(): void;
+
+  /**
+   * Returns true if the last line has been read and there are no more lines.
+   */
+  isLast(): boolean;
 }
 
 export = LineByLine;
