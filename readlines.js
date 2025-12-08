@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const LF = 0x0a;  // \n - Unix/Linux/macOS
 const CR = 0x0d;  // \r - Classic Mac OS / part of Windows CRLF
+const STDIN_FD = 0;
 
 /**
  * @class
@@ -21,6 +22,7 @@ class LineByLine {
         }
 
         this.options = options;
+        this.isStdin = this.fd === STDIN_FD;
 
         this.reset();
     }
@@ -43,7 +45,10 @@ class LineByLine {
     }
 
     close() {
-        fs.closeSync(this.fd);
+        // Don't close stdin
+        if (!this.isStdin) {
+            fs.closeSync(this.fd);
+        }
         this.fd = null;
     }
 
@@ -106,7 +111,9 @@ class LineByLine {
         do {
             const readBuffer = Buffer.alloc(this.options.readChunk);
 
-            bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, this.fdPosition);
+            // For stdin (non-seekable), pass null for position to read from current position
+            const position = this.isStdin ? null : this.fdPosition;
+            bytesRead = fs.readSync(this.fd, readBuffer, 0, this.options.readChunk, position);
             totalBytesRead = totalBytesRead + bytesRead;
 
             this.fdPosition = this.fdPosition + bytesRead;
@@ -137,7 +144,8 @@ class LineByLine {
     }
 
     next() {
-        if (!this.fd) return null;
+        // Check for null specifically, not falsy (fd 0 is stdin and is valid)
+        if (this.fd === null) return null;
 
         let line = null;
 
