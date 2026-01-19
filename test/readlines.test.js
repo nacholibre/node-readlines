@@ -155,6 +155,14 @@ test('should correctly processes NULL character in lines', () => {
     assert.strictEqual(liner.fd, null, 'fd is null');
 });
 
+test('should read 2 lines', () => {
+    const liner = new lineByLine(path.resolve(__dirname, 'fixtures/chunkSize32equalEOL.csv'), { readChunk: 32 });
+
+    assert.strictEqual(liner.next().toString(), '1,user1,#FFFFFF,"message1 mess"', 'line 0: 1,user1,#FFFFFF,"message1 mess"');
+    assert.strictEqual(liner.next().toString(), '1,user2,#FFFFFF,"message2"', 'line 1: 1,user2,#FFFFFF,"message2"');
+    assert.strictEqual(liner.fd, null, 'fd is null');
+});
+
 // ============================================
 // LINE ENDING TESTS (LF, CRLF, CR)
 // ============================================
