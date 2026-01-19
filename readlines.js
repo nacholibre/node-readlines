@@ -98,6 +98,8 @@ class LineByLine {
         // Add any remaining content (incomplete line without newline)
         if (lineStart < buffer.length) {
             lines.push(buffer.slice(lineStart));
+        } else if (lineStart === buffer.length) {
+            lines.push(Buffer.alloc(0));
         }
 
         return lines;
