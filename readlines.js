@@ -42,6 +42,7 @@ class LineByLine {
         this.linesCache = [];
         this.fdPosition = 0;
         this.lastChunkEndedWithCR = false;
+        this.lineIsComplete = false;
     }
 
     close() {
@@ -61,6 +62,7 @@ class LineByLine {
             lineStart = 1;
         }
         this.lastChunkEndedWithCR = false;
+        this.lineIsComplete = false;
 
         for (let i = lineStart; i < buffer.length; i++) {
             const byte = buffer[i];
@@ -98,6 +100,8 @@ class LineByLine {
         // Add any remaining content (incomplete line without newline)
         if (lineStart < buffer.length) {
             lines.push(buffer.slice(lineStart));
+        } else if (lineStart === buffer.length) {
+            this.lineIsComplete = true;
         }
 
         return lines;
@@ -164,7 +168,7 @@ class LineByLine {
 
             // Check if this might be an incomplete line (no newline found yet)
             // This happens when we read a chunk that doesn't contain a newline
-            if (!this.eofReached && this.linesCache.length === 0) {
+            if (!this.eofReached && !this.lineIsComplete && this.linesCache.length === 0) {
                 bytesRead = this._readChunk(line);
 
                 if (bytesRead && this.linesCache.length) {
